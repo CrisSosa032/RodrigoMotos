@@ -1,0 +1,48 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+
+    <DropShadowEffect x:Key="ShadowDepth3" 
+                  Color="Black" 
+                  Direction="270" 
+                  ShadowDepth="3" 
+                  BlurRadius="5" 
+                  Opacity="0.1"/>
+
+
+
+    <SolidColorBrush x:Key="PrimaryColorBrush" Color="#007ACC"/>
+    <SolidColorBrush x:Key="DangerColorBrush" Color="#DC3545"/>
+
+    <Style x:Key="AccionButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource PrimaryColorBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="3" 
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#0056B3"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="PeligroButtonStyle" TargetType="Button" BasedOn="{StaticResource AccionButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource DangerColorBrush}"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#C82333"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>
