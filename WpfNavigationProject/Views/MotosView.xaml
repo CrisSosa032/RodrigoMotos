@@ -1,0 +1,445 @@
+﻿<UserControl x:Class="WpfNavigationProject.Views.MotosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:WpfNavigationProject.Views"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             Background="Transparent">
+
+    <UserControl.Resources>
+
+        <!-- Sombra estándar -->
+        <DropShadowEffect x:Key="ShadowDepth3"
+                          Color="Black"
+                          Direction="270"
+                          ShadowDepth="3"
+                          BlurRadius="5"
+                          Opacity="0.1"/>
+
+    </UserControl.Resources>
+
+
+    <Border Background="White"
+            CornerRadius="15"
+            Padding="30"
+            Effect="{StaticResource ShadowDepth3}">
+
+        <Grid>
+
+            <Grid.RowDefinitions>
+
+                <!-- Título -->
+                <RowDefinition Height="Auto"/>
+
+                <!-- Filtros -->
+                <RowDefinition Height="Auto"/>
+
+                <!-- Tabla -->
+                <RowDefinition Height="*"/>
+
+                <!-- Botón -->
+                <RowDefinition Height="Auto"/>
+
+            </Grid.RowDefinitions>
+
+
+            <!-- ===================================================== -->
+            <!-- TÍTULO -->
+            <!-- ===================================================== -->
+
+            <TextBlock Grid.Row="0"
+                       Text="Listado de Motos"
+                       FontSize="36"
+                       FontWeight="Bold"
+                       Foreground="#333333"
+                       Margin="0,0,0,15"
+                       TextAlignment="Center"/>
+
+
+            <!-- ===================================================== -->
+            <!-- PANEL DE FILTROS -->
+            <!-- ===================================================== -->
+
+            <Border Grid.Row="1"
+                    Background="#F5F7FA"
+                    CornerRadius="10"
+                    Padding="15"
+                    Margin="0,0,0,15">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+
+                    <Grid.ColumnDefinitions>
+
+                        <!-- Buscador -->
+                        <ColumnDefinition Width="2.2*"/>
+
+                        <!-- Campo -->
+                        <ColumnDefinition Width="1.2*"/>
+
+                        <!-- Fecha -->
+                        <ColumnDefinition Width="1.2*"/>
+
+                        <!-- Botón -->
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+
+                    <!-- ================================================= -->
+                    <!-- BUSCAR -->
+                    <!-- ================================================= -->
+
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="0"
+                                Margin="0,0,10,10">
+
+                        <TextBlock Text="Buscar"
+                                   FontWeight="SemiBold"
+                                   Foreground="#444444"
+                                   Margin="0,0,0,5"/>
+
+                        <TextBox x:Name="TxtBuscar"
+                                 Height="32"
+                                 Padding="8,4"
+                                 VerticalContentAlignment="Center"
+                                 TextChanged="TxtBuscar_TextChanged"/>
+
+                    </StackPanel>
+
+
+                    <!-- ================================================= -->
+                    <!-- CAMPO DE BÚSQUEDA -->
+                    <!-- ================================================= -->
+
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="0,0,10,10">
+
+                        <TextBlock Text="Buscar por"
+                                   FontWeight="SemiBold"
+                                   Foreground="#444444"
+                                   Margin="0,0,0,5"/>
+
+                        <ComboBox x:Name="CmbCampoBusqueda"
+                                  Height="32"
+                                  SelectedIndex="0"
+                                  SelectionChanged="Filtro_Changed">
+
+                            <ComboBoxItem Content="Marca"/>
+                            <ComboBoxItem Content="Modelo"/>
+                            <ComboBoxItem Content="Patente"/>
+                            <ComboBoxItem Content="Cliente"/>
+
+                        </ComboBox>
+
+                    </StackPanel>
+
+
+                    <!-- ================================================= -->
+                    <!-- BOTÓN LIMPIAR -->
+                    <!-- ================================================= -->
+
+                    <Button Grid.Row="0"
+                            Grid.Column="3"
+                            Content="🧹 Limpiar"
+                            Height="32"
+                            Width="100"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,0,10"
+                            Click="BtnLimpiarFiltros_Click"
+                            Style="{StaticResource AccionButtonStyle}"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- INFORMACIÓN -->
+                    <!-- ================================================= -->
+
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               Text="Los filtros se aplican automáticamente."
+                               Foreground="#777777"
+                               FontSize="12"
+                               VerticalAlignment="Center"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- FECHA DESDE -->
+                    <!-- ================================================= -->
+
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="2"
+                                Margin="0,0,10,0">
+
+                        <TextBlock Text="Alta desde"
+                                   FontWeight="SemiBold"
+                                   Foreground="#444444"
+                                   Margin="0,0,0,5"/>
+
+                        <DatePicker x:Name="DpFechaDesde"
+                                    Height="32"
+                                    SelectedDateChanged="Filtro_Changed"/>
+
+                    </StackPanel>
+
+
+                    <!-- ================================================= -->
+                    <!-- FECHA HASTA -->
+                    <!-- ================================================= -->
+
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="3"
+                                Margin="0,0,10,0">
+
+                        <TextBlock Text="Alta hasta"
+                                   FontWeight="SemiBold"
+                                   Foreground="#444444"
+                                   Margin="0,0,0,5"/>
+
+                        <DatePicker x:Name="DpFechaHasta"
+                                    Height="32"
+                                    SelectedDateChanged="Filtro_Changed"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- ===================================================== -->
+            <!-- TABLA DE MOTOS -->
+            <!-- ===================================================== -->
+
+            <DataGrid Grid.Row="2"
+                      Name="MotosDataGrid"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      GridLinesVisibility="Horizontal"
+                      RowBackground="LightGray"
+                      AlternatingRowBackground="#FFEFEFEF"
+                      CanUserResizeColumns="True"
+                      Foreground="#FF2A2A2A"
+                      FontSize="14"
+                      FontWeight="SemiBold"
+                      HeadersVisibility="Column">
+
+                <DataGrid.ColumnHeaderStyle>
+
+                    <Style TargetType="{x:Type DataGridColumnHeader}">
+
+                        <Setter Property="Background"
+                                Value="#FF007ACC"/>
+
+                        <Setter Property="Foreground"
+                                Value="White"/>
+
+                        <Setter Property="HorizontalContentAlignment"
+                                Value="Center"/>
+
+                        <Setter Property="Padding"
+                                Value="5"/>
+
+                    </Style>
+
+                </DataGrid.ColumnHeaderStyle>
+
+
+                <DataGrid.Columns>
+
+
+                    <!-- ================================================= -->
+                    <!-- ID -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="ID"
+                                        Binding="{Binding IdMoto}"
+                                        Width="50">
+
+                        <DataGridTextColumn.ElementStyle>
+
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Center"/>
+
+                            </Style>
+
+                        </DataGridTextColumn.ElementStyle>
+
+                    </DataGridTextColumn>
+
+
+                    <!-- ================================================= -->
+                    <!-- MARCA -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Marca"
+                                        Binding="{Binding Marca}"
+                                        Width="*"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- MODELO -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Modelo"
+                                        Binding="{Binding Modelo}"
+                                        Width="*"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- AÑO -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Año"
+                                        Binding="{Binding Anio}"
+                                        Width="60">
+
+                        <DataGridTextColumn.ElementStyle>
+
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Center"/>
+
+                            </Style>
+
+                        </DataGridTextColumn.ElementStyle>
+
+                    </DataGridTextColumn>
+
+
+                    <!-- ================================================= -->
+                    <!-- PATENTE -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Patente"
+                                        Binding="{Binding Patente}"
+                                        Width="90">
+
+                        <DataGridTextColumn.ElementStyle>
+
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Center"/>
+
+                            </Style>
+
+                        </DataGridTextColumn.ElementStyle>
+
+                    </DataGridTextColumn>
+
+
+                    <!-- ================================================= -->
+                    <!-- MOTOR -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Motor"
+                                        Binding="{Binding NroMotor}"
+                                        Width="1.2*"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- CHASIS -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Chasis"
+                                        Binding="{Binding NroChasis}"
+                                        Width="1.5*"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- OBSERVACIONES -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Observaciones"
+                                        Binding="{Binding Observaciones}"
+                                        Width="2*"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- FECHA DE ALTA -->
+                    <!-- ================================================= -->
+
+                    <DataGridTextColumn Header="Fecha Alta"
+                                        Binding="{Binding FechaAlta, StringFormat={}{0:dd/MM/yyyy}}"
+                                        Width="100">
+
+                        <DataGridTextColumn.ElementStyle>
+
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Center"/>
+
+                            </Style>
+
+                        </DataGridTextColumn.ElementStyle>
+
+                    </DataGridTextColumn>
+
+
+                    <!-- ================================================= -->
+                    <!-- ACCIONES -->
+                    <!-- ================================================= -->
+
+                    <DataGridTemplateColumn Header="Acciones"
+                                            Width="170">
+
+                        <DataGridTemplateColumn.CellTemplate>
+
+                            <DataTemplate>
+
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Center">
+
+                                    <Button Content="✏️ Editar"
+                                            Click="BtnEditar_Click"
+                                            Margin="2"
+                                            Tag="{Binding IdMoto}"
+                                            Style="{StaticResource AccionButtonStyle}"/>
+
+                                </StackPanel>
+
+                            </DataTemplate>
+
+                        </DataGridTemplateColumn.CellTemplate>
+
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+
+            <!-- ===================================================== -->
+            <!-- NUEVA MOTO -->
+            <!-- ===================================================== -->
+
+            <Button Grid.Row="3"
+                    Content="+ Nueva Moto"
+                    Name="BtnNuevaMoto"
+                    Click="BtnNuevaMoto_Click"
+                    Style="{StaticResource AccionButtonStyle}"
+                    Margin="0,20,0,0"
+                    HorizontalAlignment="Center"
+                    Width="180"
+                    Height="35"/>
+
+        </Grid>
+
+    </Border>
+
+</UserControl>

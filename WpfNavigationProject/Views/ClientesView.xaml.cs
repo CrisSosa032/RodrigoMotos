@@ -6,9 +6,6 @@ using Microsoft.Data.SqlClient;
 using WpfNavigationProject.DataAccess;
 using WpfNavigationProject.Models;
 
-// Importante: Necesitas la referencia a la MainWindow para la navegación
-using WpfNavigationProject.Views;
-
 namespace WpfNavigationProject.Views
 {
     /// <summary>
@@ -16,116 +13,372 @@ namespace WpfNavigationProject.Views
     /// </summary>
     public partial class ClientesView : UserControl
     {
-        // Instancia del Repositorio de Clientes
-        private ClienteRepository _clienteRepository = new ClienteRepository();
+        private readonly ClienteRepository _clienteRepository =
+            new ClienteRepository();
+
 
         public ClientesView()
         {
             InitializeComponent();
-            // Llama a la función de carga al iniciar la vista
+
             CargarDatosClientes();
         }
 
+
+        // =========================================================
+        // CARGA INICIAL
+        // =========================================================
+
         /// <summary>
-        /// Obtiene todos los clientes de la base de datos y los enlaza al DataGrid.
+        /// Carga los clientes activos al abrir la vista.
         /// </summary>
         public void CargarDatosClientes()
         {
             try
             {
-                // 1. Obtener los datos
-                List<Cliente> clientes = _clienteRepository.GetAllClientes();
+                List<Cliente> clientes =
+                    _clienteRepository.GetAllClientes();
 
-                // 2. Conectar al DataGrid
                 ClientesDataGrid.ItemsSource = clientes;
             }
             catch (System.Configuration.ConfigurationErrorsException ex)
             {
-                MessageBox.Show($"Error de configuración: Revisa tu App.config. {ex.Message}", "Error de Configuración");
+                MessageBox.Show(
+                    $"Error de configuración: Revisa tu App.config.\n\n{ex.Message}",
+                    "Error de Configuración");
             }
             catch (SqlException ex)
             {
-                MessageBox.Show($"Error de base de datos: Asegúrate de que SQL Server esté corriendo. {ex.Message}", "Error SQL");
+                MessageBox.Show(
+                    $"Error de base de datos: Asegúrate de que SQL Server esté corriendo.\n\n{ex.Message}",
+                    "Error SQL");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ocurrió un error inesperado: {ex.Message}", "Error General");
+                MessageBox.Show(
+                    $"Ocurrió un error inesperado:\n\n{ex.Message}",
+                    "Error General");
             }
         }
 
-        // --- Lógica de Navegación y CRUD ---
+
+        // =========================================================
+        // BUSCADOR
+        // =========================================================
 
         /// <summary>
-        /// Centraliza la navegación al formulario de creación/edición.
+        /// Ejecuta la búsqueda utilizando todos los filtros actuales.
         /// </summary>
-        /// <param name="idClienteAEditar">ID del cliente (0 = Nuevo, > 0 = Editar).</param>
-        private void NavegarAFormulario(int idClienteAEditar)
+        private void AplicarFiltros()
         {
-            // Obtener la ventana principal (MainWindow)
-            MainWindow mainWindow = Window.GetWindow(this) as MainWindow;
+            try
+            {
+                // ---------------------------------------------
+                // TEXTO
+                // ---------------------------------------------
+
+                string texto =
+                    TxtBuscar.Text.Trim();
+
+
+                // ---------------------------------------------
+                // TIPO DE BÚSQUEDA
+                // ---------------------------------------------
+
+                string buscarPor = "Nombre";
+
+                if (CmbBuscarPor.SelectedItem is ComboBoxItem item)
+                {
+                    buscarPor =
+                        item.Content?.ToString() ?? "Nombre";
+                }
+
+
+                // ---------------------------------------------
+                // ESTADO
+                // ---------------------------------------------
+
+                bool? activo = true;
+
+                if (RbActivos.IsChecked == true)
+                {
+                    activo = true;
+                }
+                else if (RbInactivos.IsChecked == true)
+                {
+                    activo = false;
+                }
+                else if (RbTodos.IsChecked == true)
+                {
+                    activo = null;
+                }
+
+
+                // ---------------------------------------------
+                // FECHAS
+                // ---------------------------------------------
+
+                DateTime? fechaDesde =
+                    DpFechaDesde.SelectedDate;
+
+                DateTime? fechaHasta =
+                    DpFechaHasta.SelectedDate;
+
+
+                // ---------------------------------------------
+                // VALIDAR RANGO
+                // ---------------------------------------------
+
+                if (fechaDesde.HasValue &&
+                    fechaHasta.HasValue &&
+                    fechaDesde.Value.Date > fechaHasta.Value.Date)
+                {
+                    ClientesDataGrid.ItemsSource =
+                        new List<Cliente>();
+
+                    return;
+                }
+
+
+                // ---------------------------------------------
+                // CONSULTA
+                // ---------------------------------------------
+
+                List<Cliente> clientes =
+                    _clienteRepository.GetClientesFiltrados(
+                        texto,
+                        buscarPor,
+                        activo,
+                        fechaDesde,
+                        fechaHasta);
+
+
+                ClientesDataGrid.ItemsSource = clientes;
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show(
+                    $"Error de base de datos:\n\n{ex.Message}",
+                    "Error SQL",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Ocurrió un error inesperado:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+
+        // =========================================================
+        // EVENTOS DEL BUSCADOR
+        // =========================================================
+
+        private void TxtBuscar_TextChanged(
+            object sender,
+            TextChangedEventArgs e)
+        {
+            AplicarFiltros();
+        }
+
+
+        private void CmbBuscarPor_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (IsInitialized)
+            {
+                AplicarFiltros();
+            }
+        }
+
+
+        private void FiltroCambiado(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (IsInitialized)
+            {
+                AplicarFiltros();
+            }
+        }
+
+
+        private void Fecha_SelectedDateChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (IsInitialized)
+            {
+                AplicarFiltros();
+            }
+        }
+
+
+        // =========================================================
+        // LIMPIAR FILTROS
+        // =========================================================
+
+        private void BtnLimpiarFiltros_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            TxtBuscar.Clear();
+
+            CmbBuscarPor.SelectedIndex = 0;
+
+            RbActivos.IsChecked = true;
+
+            DpFechaDesde.SelectedDate = null;
+            DpFechaHasta.SelectedDate = null;
+
+            CargarDatosClientes();
+        }
+
+
+        // =========================================================
+        // NAVEGACIÓN
+        // =========================================================
+
+        private void NavegarAFormulario(
+            int idClienteAEditar)
+        {
+            MainWindow? mainWindow =
+                Window.GetWindow(this) as MainWindow;
 
             if (mainWindow != null)
             {
-                // Crear la instancia del formulario, pasando el ID
-                ClienteFormView formulario = new ClienteFormView(idClienteAEditar);
+                ClienteFormView formulario =
+                    new ClienteFormView(idClienteAEditar);
 
-                // Navegar en el Frame principal (ContentFrame)
                 mainWindow.ContentFrame.Navigate(formulario);
             }
         }
 
-        // Manejador del botón "+ Nuevo Cliente" (navegación para CREAR)
-        private void BtnNuevoCliente_Click(object sender, RoutedEventArgs e)
+
+        // =========================================================
+        // NUEVO CLIENTE
+        // =========================================================
+
+        private void BtnNuevoCliente_Click(
+            object sender,
+            RoutedEventArgs e)
         {
-            // ID = 0 indica modo CREACIÓN
             NavegarAFormulario(0);
         }
 
-        // Manejador de los botones "Editar" dentro del DataGrid (navegación para EDITAR)
-        private void BtnEditar_Click(object sender, RoutedEventArgs e)
+
+        // =========================================================
+        // EDITAR CLIENTE
+        // =========================================================
+
+        private void BtnEditar_Click(
+            object sender,
+            RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is int idCliente)
+            if (sender is Button button &&
+                button.Tag is int idCliente)
             {
-                // El ID > 0 indica modo EDICIÓN
                 NavegarAFormulario(idCliente);
             }
         }
 
-        // Manejador de los botones "Eliminar" dentro del DataGrid (DELETE)
-        private void BtnEliminar_Click(object sender, RoutedEventArgs e)
+
+        // =========================================================
+        // DESACTIVAR CLIENTE
+        // =========================================================
+
+        private void BtnEliminar_Click(
+            object sender,
+            RoutedEventArgs e)
         {
-            // 1. Obtenemos el ID del cliente desde el Tag del botón
-            if (sender is Button button && button.Tag is int idCliente)
+            if (sender is Button button &&
+                button.Tag is int idCliente)
             {
-                // 2. Preguntamos al usuario si está seguro (¡Fundamental en DELETE!)
-                MessageBoxResult resultado = MessageBox.Show(
-                    "¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.",
-                    "Confirmar Eliminación",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                MessageBoxResult resultado =
+                    MessageBox.Show(
+                        "¿Estás seguro de que deseas desactivar este cliente?\n\n" +
+                        "Las motos y servicios asociados se conservarán " +
+                        "como historial.",
+                        "Confirmar desactivación",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
 
                 if (resultado == MessageBoxResult.Yes)
                 {
                     try
                     {
-                        // 3. Llamamos al repositorio para borrar
-                        _clienteRepository.DeleteCliente(idCliente);
+                        _clienteRepository.DeleteCliente(
+                            idCliente);
 
-                        // 4. Avisamos que salió bien
-                        MessageBox.Show("Cliente eliminado correctamente.", "Éxito");
+                        MessageBox.Show(
+                            "Cliente desactivado correctamente.",
+                            "Éxito",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
 
-                        // 5. ¡IMPORTANTE! Refrescamos el DataGrid para que el cliente desaparezca de la lista
-                        CargarDatosClientes();
+                        AplicarFiltros();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error al intentar eliminar: {ex.Message}", "Error");
+                        MessageBox.Show(
+                            $"Error al intentar desactivar:\n\n{ex.Message}",
+                            "Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
                     }
                 }
             }
         }
 
-        // NOTA: El método CargarDatosParaEdicion() que tenías antes está obsoleto aquí.
-        // La lógica de carga para la edición se maneja directamente en ClienteFormView.
+
+        // =========================================================
+        // ACTIVAR CLIENTE
+        // =========================================================
+
+        private void BtnActivar_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (sender is Button button &&
+                button.Tag is int idCliente)
+            {
+                MessageBoxResult resultado =
+                    MessageBox.Show(
+                        "¿Deseas activar nuevamente este cliente?",
+                        "Confirmar activación",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                if (resultado == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        _clienteRepository.RestaurarCliente(
+                            idCliente);
+
+                        MessageBox.Show(
+                            "Cliente activado correctamente.",
+                            "Éxito",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+
+                        AplicarFiltros();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(
+                            $"Error al intentar activar:\n\n{ex.Message}",
+                            "Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }
+            }
+        }
     }
 }

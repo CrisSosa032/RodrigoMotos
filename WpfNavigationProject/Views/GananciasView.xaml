@@ -1,0 +1,136 @@
+﻿<UserControl x:Class="WpfNavigationProject.Views.GananciasView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="700"
+             d:DesignWidth="1000">
+
+    <Grid Background="#F5F6F8" Margin="20">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+
+        <!-- ================================================= -->
+        <!-- TÍTULO -->
+        <!-- ================================================= -->
+
+        <StackPanel Grid.Row="0">
+
+            <TextBlock Text="Ganancias"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#1F2937"/>
+
+            <TextBlock Text="Registro de servicios cobrados"
+                       FontSize="14"
+                       Foreground="#6B7280"
+                       Margin="0,5,0,0"/>
+
+        </StackPanel>
+
+
+        <!-- ================================================= -->
+        <!-- RESUMEN -->
+        <!-- ================================================= -->
+
+        <Border Grid.Row="2"
+                Background="White"
+                CornerRadius="10"
+                Padding="20"
+                BorderBrush="#E5E7EB"
+                BorderThickness="1">
+
+            <StackPanel>
+
+                <TextBlock Text="Total generado"
+                           FontSize="13"
+                           Foreground="#6B7280"/>
+
+                <TextBlock x:Name="TxtTotalGanancias"
+                           Text="$ 0,00"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#007ACC"
+                           Margin="0,5,0,0"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+        <!-- ================================================= -->
+        <!-- TABLA DE GANANCIAS -->
+        <!-- ================================================= -->
+
+        <Border Grid.Row="4"
+                Background="White"
+                CornerRadius="10"
+                Padding="15"
+                BorderBrush="#E5E7EB"
+                BorderThickness="1">
+
+            <DataGrid x:Name="DgGanancias"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      HeadersVisibility="Column"
+                      BorderThickness="0"
+                      GridLinesVisibility="Horizontal"
+                      RowHeight="42">
+
+                <DataGrid.Columns>
+
+                    <!-- ID GANANCIA -->
+
+                    <DataGridTextColumn Header="ID Ganancia"
+                                        Binding="{Binding IdGanancia}"
+                                        Width="*"/>
+
+
+                    <!-- SERVICIO -->
+
+                    <DataGridTextColumn Header="Servicio"
+                                        Binding="{Binding IdServicio}"
+                                        Width="*"/>
+
+
+                    <!-- MONTO -->
+
+                    <DataGridTextColumn Header="Monto"
+                                        Width="*">
+
+                        <DataGridTextColumn.Binding>
+
+                            <Binding Path="Monto"
+                                     StringFormat="{}{0:C2}"
+                                     ConverterCulture="es-AR"/>
+
+                        </DataGridTextColumn.Binding>
+
+                    </DataGridTextColumn>
+
+
+                    <!-- FECHA -->
+
+                    <DataGridTextColumn Header="Fecha"
+                                        Binding="{Binding FechaGanancia,
+                                                  StringFormat={}{0:dd/MM/yyyy}}"
+                                        Width="*"/>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+        </Border>
+
+    </Grid>
+
+</UserControl>

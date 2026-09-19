@@ -1,7 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
+using WpfNavigationProject.Models;
 using WpfNavigationProject.Views;
-using WpfNavigationProject.DataAccess;
 
 namespace WpfNavigationProject
 {
@@ -10,15 +11,35 @@ namespace WpfNavigationProject
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        // Usuario que inició sesión
+        private readonly Usuario _usuario;
+
+        public MainWindow(Usuario usuario)
         {
             InitializeComponent();
 
+            // Guardamos el usuario autenticado
+            _usuario = usuario;
 
-            // Carga la vista de 'Inicio' por defecto al iniciar la aplicación.
-            // Asegúrate de que 'HomeView' exista en la carpeta 'Views'.
-            ContentFrame.Navigate(new HomeView());
+            // =========================================================
+            // CONTROL DE PERMISOS
+            // =========================================================
+
+            // Si el usuario NO es administrador,
+            // ocultamos el botón de Configuración.
+            if (_usuario.Rol != "Admin")
+            {
+                BtnConfiguracion.Visibility = Visibility.Collapsed;
+            }
+
+            // =========================================================
+            // VISTA INICIAL
+            // =========================================================
+
+            // Carga la vista de Inicio por defecto
+            ContentFrame.Navigate(new Inicio(_usuario));
         }
+
 
         /// <summary>
         /// Maneja el evento Click de los botones del Sidebar.
@@ -27,49 +48,75 @@ namespace WpfNavigationProject
         {
             if (sender is Button button)
             {
-                // Obtenemos el Tag del botón para determinar qué vista cargar.
-                string viewTag = button.Tag?.ToString();
+                // Obtenemos el Tag del botón
+                string? viewTag = button.Tag?.ToString();
 
                 if (string.IsNullOrEmpty(viewTag))
                 {
-                    return; // No hacer nada si no hay Tag
+                    return;
                 }
 
-                // Dependiendo del Tag, navegamos a la vista correspondiente.
-                // En WPF, lo más común es navegar a un nuevo UserControl (página).
-                UserControl newView = null;
+                UserControl? newView = null;
 
                 switch (viewTag)
                 {
                     case "Home":
-                        newView = new HomeView();
+                        newView = new Inicio(_usuario);
                         break;
+
                     case "Clientes":
                         newView = new ClientesView();
                         break;
+
                     case "Motos":
-                        // Aquí navegaremos a la nueva vista cuando la creemos
-                        // ContentFrame.Navigate(new MotosView()); 
-                        MessageBox.Show("Cargando sección de Motos...");
+                        newView = new MotosView();
                         break;
-                    case "Analiticas":
-                        // newView = new AnaliticasView(); // Necesitas crear este archivo
-                        newView = new PlaceholderView("Sección de Analíticas");
+
+                    case "Servicios":
+                        newView = new ServiciosView();
                         break;
+
+                    case "Ganancias":
+                        newView = new GananciasView();
+                        break;
+
                     case "Configuracion":
-                        // newView = new ConfiguracionView(); // Necesitas crear este archivo
-                        newView = new PlaceholderView("Sección de Configuración");
+
+                        // =====================================================
+                        // SEGUNDA CAPA DE SEGURIDAD
+                        // =====================================================
+                        // Aunque el botón esté oculto para usuarios comunes,
+                        // también comprobamos el rol antes de permitir
+                        // la navegación.
+                        if (_usuario.Rol != "Admin")
+                        {
+                            MessageBox.Show(
+                                "No tienes permisos para acceder a esta sección.",
+                                "Acceso denegado",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning
+                            );
+
+                            return;
+                        }
+
+                        
+                        newView = new ConfiguracionView();
+
                         break;
+
                     default:
-                        // Vista por defecto o mensaje de error
-                        newView = new PlaceholderView("Página no encontrada");
+                        newView = new PlaceholderView(
+                            "placeholder");
                         break;
                 }
 
                 if (newView != null)
                 {
-                    // Limpiamos la caché de navegación antes de cargar una nueva página
+                    // Limpiamos la caché de navegación
                     ContentFrame.Content = null;
+
+                    // Cargamos la nueva vista
                     ContentFrame.Navigate(newView);
                 }
             }

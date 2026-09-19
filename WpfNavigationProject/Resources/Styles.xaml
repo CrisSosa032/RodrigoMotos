@@ -45,4 +45,42 @@
         </Style.Triggers>
     </Style>
 
+    <Style x:Key="ExitoButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource AccionButtonStyle}">
+
+        <Setter Property="Background"
+            Value="#28A745"/>
+
+        <Setter Property="Foreground"
+            Value="White"/>
+
+        <Setter Property="BorderBrush"
+            Value="#218838"/>
+
+        <Setter Property="Cursor"
+            Value="Hand"/>
+
+        <Style.Triggers>
+
+            <Trigger Property="IsMouseOver"
+                 Value="True">
+
+                <Setter Property="Background"
+                    Value="#218838"/>
+
+            </Trigger>
+
+            <Trigger Property="IsPressed"
+                 Value="True">
+
+                <Setter Property="Background"
+                    Value="#1E7E34"/>
+
+            </Trigger>
+
+        </Style.Triggers>
+
+    </Style>
+
 </ResourceDictionary>

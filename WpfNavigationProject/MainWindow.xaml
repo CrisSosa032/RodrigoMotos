@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Panel de Navegación WPF" Height="600" Width="1200"
+        
         WindowStartupLocation="CenterScreen">
 
     <!-- Definición de los colores y estilos principales -->
@@ -57,7 +58,7 @@
 
         <!-- Sidebar: Columna 0 -->
         <Border Grid.Column="0" Background="#FF483C90" Padding="15">
-            <StackPanel>
+            <StackPanel Cursor="">
                 <!-- Título del Panel -->
                 <TextBlock Text="Panel de Navegación" 
                            Foreground="White" 
@@ -75,39 +76,55 @@
                     </StackPanel>
                 </Button>
 
-                <!-- 2. Productos (Content corregido) -->
+                <!-- 2. Clientes (Content corregido) -->
                 <Button Style="{StaticResource SidebarButtonStyle}" Tag="Clientes" Click="SidebarButton_Click" Cursor="">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE73D;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
                         <TextBlock Text="Clientes"/>
                     </StackPanel>
                 </Button>
 
-                <!-- 3. Pedidos (Content corregido) -->
-                    <Button Style="{StaticResource SidebarButtonStyle}" 
-                        Tag="Motos" 
-                        Click="SidebarButton_Click">
+                <!-- 3. Motos (Content corregido) -->
+                    <Button Style="{StaticResource SidebarButtonStyle}"  Tag="Motos"  Click="SidebarButton_Click" Cursor="">
                         <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xEC4A;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                        <TextBlock Text="Motos"/>
+                            <TextBlock Text="&#xEC4A;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+                            <TextBlock Text="Motos"/>
                         </StackPanel>
                     </Button>
 
                 <!-- 4. Analíticas (Content corregido) -->
-                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Analiticas" Click="SidebarButton_Click">
+                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Servicios" Click="SidebarButton_Click">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE90F;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                        <TextBlock Text="Analíticas"/>
+                        <TextBlock Text="Servicios"/>
                     </StackPanel>
                 </Button>
 
-                <!-- 5. Configuración (Content corregido) -->
-                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Configuracion" Click="SidebarButton_Click">
+                <!-- 5. Ganancias (Content corregido) -->
+                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Ganancias" Click="SidebarButton_Click">
+                    <StackPanel Orientation="Horizontal" Cursor="">
+                        <TextBlock Text="&#xEC59;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+
+                        <TextBlock Text="Ganancias"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- 6. Configuración (Content corregido) -->
+                
+                <Button x:Name="BtnConfiguracion"
+                                Style="{StaticResource SidebarButtonStyle}"
+                                Tag="Configuracion"
+                                Click="SidebarButton_Click">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+                        <TextBlock Text="&#xE713;"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    FontSize="16"
+                                    Margin="0,0,10,0"/>
                         <TextBlock Text="Configuración"/>
                     </StackPanel>
                 </Button>
+               
+
 
             </StackPanel>
         </Border>

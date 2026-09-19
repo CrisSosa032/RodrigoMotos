@@ -31,7 +31,7 @@ namespace WpfNavigationProject.Views
             try
             {
                 // Buscamos los datos en la base de datos
-                Cliente cliente = _repo.GetClienteById(_idClienteActual);
+                Cliente? cliente = _repo.GetClienteById(_idClienteActual);
 
                 if (cliente != null)
                 {
@@ -93,7 +93,7 @@ namespace WpfNavigationProject.Views
 
         private void NavegarAListaClientes()
         {
-            MainWindow mainWindow = Window.GetWindow(this) as MainWindow;
+            MainWindow? mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {
                 mainWindow.ContentFrame.Navigate(new ClientesView());

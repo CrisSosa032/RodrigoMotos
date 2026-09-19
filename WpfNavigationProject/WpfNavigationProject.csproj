@@ -6,10 +6,34 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\RM_Workshop_Icon_Multisize.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="images\back-image.jpg" />
+    <None Remove="images\key-icon.png" />
+    <None Remove="images\logo.png" />
+    <None Remove="images\user-icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\RM_Workshop_Icon_Multisize.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ViewsModels\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="images\back-image.jpg" />
+    <Resource Include="images\key-icon.png" />
+    <Resource Include="images\logo.png" />
+    <Resource Include="images\user-icon.png" />
   </ItemGroup>
 
 </Project>
