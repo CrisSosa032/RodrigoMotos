@@ -1,224 +1,456 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using WpfNavigationProject.Models;
 using WpfNavigationProject.DataAccess;
-using Microsoft.Data.SqlClient;
+using WpfNavigationProject.Models;
 
 namespace WpfNavigationProject.Views
 {
     public partial class MotoFormView : UserControl
     {
-        // Repositorio de motos
-        private MotoRepository _repo = new MotoRepository();
+        private readonly MotoRepository _repo;
+        private readonly ClienteRepository _clienteRepository;
 
-        // ID de la moto que estamos editando.
-        // Si es 0, significa que estamos creando una nueva.
-        private int _idMotoActual;
+        private readonly int _idMotoActual;
+
+        private List<Cliente> _clientes = new List<Cliente>();
+
+        private int _idClienteSeleccionado = 0;
+
+
+        // =========================================================
+        // CONSTRUCTOR
+        // =========================================================
 
         public MotoFormView(int idMoto)
         {
             InitializeComponent();
 
+            _repo = new MotoRepository();
+            _clienteRepository = new ClienteRepository();
+
             _idMotoActual = idMoto;
 
-            // Si el ID es mayor a 0, estamos editando.
+            CargarClientes();
+
             if (_idMotoActual > 0)
             {
-                PrellenarFormulario();
-
-                BtnCargarMoto.Content = "Actualizar Moto";
+                CargarMoto();
             }
         }
 
-        private void PrellenarFormulario()
+
+        // =========================================================
+        // CARGAR CLIENTES ACTIVOS
+        // =========================================================
+
+        private void CargarClientes()
         {
             try
             {
-                // Buscamos los datos en la base de datos.
-                Moto? moto = _repo.GetMotoById(_idMotoActual);
+                _clientes = _clienteRepository.GetAllClientes();
 
-                if (moto != null)
-                {
-                    // Llenamos los TextBox con los datos recuperados.
-                    TxtIdCliente.Text = moto.IdCliente.ToString();
-                    TxtMarca.Text = moto.Marca;
-                    TxtModelo.Text = moto.Modelo;
-                    TxtAnio.Text = moto.Anio.ToString();
-                    TxtPatente.Text = moto.Patente;
-                    TxtMotor.Text = moto.NroMotor;
-                    TxtChasis.Text = moto.NroChasis;
-                    TxtObservaciones.Text = moto.Observaciones;
-                }
+                LstClientes.ItemsSource = null;
+
+                LstClientes.Visibility =
+                    Visibility.Collapsed;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Error al cargar datos: {ex.Message}",
+                    "No se pudieron cargar los clientes.\n\n"
+                    + ex.Message,
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
+
+
+        // =========================================================
+        // BUSCAR CLIENTE
+        // =========================================================
+
+        private void TxtBuscarCliente_TextChanged(
+            object sender,
+            TextChangedEventArgs e)
+        {
+            if (_clientes == null)
+                return;
+
+            string texto =
+                TxtBuscarCliente.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                LstClientes.ItemsSource = null;
+
+                LstClientes.Visibility =
+                    Visibility.Collapsed;
+
+                return;
+            }
+
+
+            List<Cliente> resultados =
+                _clientes
+                    .Where(c =>
+                        (!string.IsNullOrWhiteSpace(c.Nombre)
+                         &&
+                         c.Nombre.IndexOf(
+                             texto,
+                             StringComparison.OrdinalIgnoreCase) >= 0)
+                        ||
+                        (!string.IsNullOrWhiteSpace(c.DNI)
+                         &&
+                         c.DNI.IndexOf(
+                             texto,
+                             StringComparison.OrdinalIgnoreCase) >= 0))
+                    .OrderBy(c => c.Nombre)
+                    .ToList();
+
+
+            LstClientes.ItemsSource =
+                resultados;
+
+
+            LstClientes.Visibility =
+                resultados.Count > 0
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+
+        // =========================================================
+        // SELECCIONAR CLIENTE
+        // =========================================================
+
+        private void LstClientes_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (LstClientes.SelectedItem is not Cliente cliente)
+                return;
+
+
+            _idClienteSeleccionado =
+                cliente.IdCliente;
+
+
+            TxtClienteSeleccionado.Text =
+                $"{cliente.Nombre}   |   DNI: {cliente.DNI}";
+
+
+            PanelClienteSeleccionado.Visibility =
+                Visibility.Visible;
+
+
+            TxtBuscarCliente.Text =
+                string.Empty;
+
+
+            LstClientes.ItemsSource =
+                null;
+
+
+            LstClientes.Visibility =
+                Visibility.Collapsed;
+
+
+            LstClientes.SelectedItem =
+                null;
+        }
+
+
+        // =========================================================
+        // CAMBIAR CLIENTE
+        // =========================================================
+
+        private void BtnCambiarCliente_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            _idClienteSeleccionado = 0;
+
+
+            TxtClienteSeleccionado.Text =
+                string.Empty;
+
+
+            PanelClienteSeleccionado.Visibility =
+                Visibility.Collapsed;
+
+
+            TxtBuscarCliente.Focus();
+        }
+
+
+        // =========================================================
+        // CARGAR MOTO PARA EDICIÓN
+        // =========================================================
+
+        private void CargarMoto()
+        {
+            try
+            {
+                Moto ?moto =
+                    _repo.GetMotoById(_idMotoActual);
+
+
+                if (moto == null)
+                {
+                    MessageBox.Show(
+                        "No se encontró la moto seleccionada.",
+                        "Aviso",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // TÍTULO
+                // -------------------------------------------------
+
+                TxtTitulo.Text =
+                    "Editar moto";
+
+                BtnCargarMoto.Content =
+                    "Guardar cambios";
+
+
+                // -------------------------------------------------
+                // CLIENTE
+                // -------------------------------------------------
+
+                _idClienteSeleccionado =
+                    moto.IdCliente;
+
+
+                Cliente? cliente =
+                    _clienteRepository.GetClienteById(
+                        moto.IdCliente);
+
+
+                if (cliente != null)
+                {
+                    TxtClienteSeleccionado.Text =
+                        $"{cliente.Nombre}   |   DNI: {cliente.DNI}";
+
+                    PanelClienteSeleccionado.Visibility =
+                        Visibility.Visible;
+                }
+
+
+                // -------------------------------------------------
+                // DATOS DE LA MOTO
+                // -------------------------------------------------
+
+                TxtMarca.Text =
+                    moto.Marca ?? string.Empty;
+
+                TxtModelo.Text =
+                    moto.Modelo ?? string.Empty;
+
+                TxtAnio.Text = moto.Anio.HasValue
+                    ? moto.Anio.Value.ToString()
+                    : string.Empty;
+
+                TxtPatente.Text =
+                    moto.Patente ?? string.Empty;
+
+                TxtMotor.Text =
+                    moto.NroMotor ?? string.Empty;
+
+                TxtChasis.Text =
+                    moto.NroChasis ?? string.Empty;
+
+                TxtObservaciones.Text =
+                    moto.Observaciones ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No se pudo cargar la moto.\n\n"
+                    + ex.Message,
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+
+        // =========================================================
+        // GUARDAR / ACTUALIZAR
+        // =========================================================
 
         private void BtnCargarMoto_Click(
             object sender,
             RoutedEventArgs e)
         {
-            // 1. Validaciones básicas.
-            if (string.IsNullOrWhiteSpace(TxtIdCliente.Text) ||
-                string.IsNullOrWhiteSpace(TxtMarca.Text) ||
-                string.IsNullOrWhiteSpace(TxtPatente.Text))
-            {
-                MessageBox.Show(
-                    "El ID del Cliente, la Marca y la Patente son obligatorios.",
-                    "Validación",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                return;
-            }
-
-            // Validamos que el ID del cliente sea realmente un número.
-            if (!int.TryParse(
-                    TxtIdCliente.Text,
-                    out int idClienteValido))
-            {
-                MessageBox.Show(
-                    "El ID del Cliente debe ser un número válido.",
-                    "Error de formato",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                return;
-            }
-
-            // Intentamos convertir el año.
-            int.TryParse(
-                TxtAnio.Text,
-                out int anioValido);
-
-            // 2. Creamos el objeto con los datos actuales.
-            Moto motoData = new Moto
-            {
-                IdMoto = _idMotoActual,
-
-                IdCliente = idClienteValido,
-
-                Marca = TxtMarca.Text,
-
-                Modelo = TxtModelo.Text,
-
-                Anio = (short)anioValido,
-
-                Patente = TxtPatente.Text,
-
-                NroMotor = TxtMotor.Text,
-
-                NroChasis = TxtChasis.Text,
-
-                Observaciones = TxtObservaciones.Text
-            };
-
             try
             {
-                if (_idMotoActual == 0)
+                // -------------------------------------------------
+                // VALIDAR CLIENTE
+                // -------------------------------------------------
+
+                if (_idClienteSeleccionado <= 0)
                 {
-                    // =====================================================
-                    // MODO CREACIÓN
-                    // =====================================================
+                    MessageBox.Show(
+                        "Primero debés seleccionar un cliente.",
+                        "Cliente requerido",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
 
-                    // AddMoto devuelve el IdMoto generado por SQL Server.
-                    int nuevoIdMoto = _repo.AddMoto(motoData);
+                    TxtBuscarCliente.Focus();
 
-                    if (nuevoIdMoto <= 0)
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // VALIDAR MARCA
+                // -------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                    TxtMarca.Text))
+                {
+                    MessageBox.Show(
+                        "Ingresá la marca de la moto.",
+                        "Dato requerido",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    TxtMarca.Focus();
+
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // VALIDAR MODELO
+                // -------------------------------------------------
+
+                if (string.IsNullOrWhiteSpace(
+                    TxtModelo.Text))
+                {
+                    MessageBox.Show(
+                        "Ingresá el modelo de la moto.",
+                        "Dato requerido",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    TxtModelo.Focus();
+
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // AÑO
+                // -------------------------------------------------
+
+                short? anio = null;
+
+                if (!string.IsNullOrWhiteSpace(TxtAnio.Text))
+                {
+                    if (!short.TryParse(TxtAnio.Text.Trim(), out short anioIngresado))
                     {
-                        MessageBox.Show(
-                            "La moto fue registrada, pero no se pudo obtener su ID.",
-                            "Advertencia",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                        MessageBox.Show("El año debe ser un número válido.",
+                            "Dato incorrecto", MessageBoxButton.OK, MessageBoxImage.Warning);
 
-                        NavegarAListaMotos();
+                        TxtAnio.Focus();
                         return;
                     }
 
-                    // Preguntamos si desea agregar un servicio.
-                    MessageBoxResult respuesta = MessageBox.Show(
-                        "Moto registrada con éxito.\n\n" +
-                        "¿Desea añadir un servicio a esta moto?",
-                        "Moto registrada",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-
-                    if (respuesta == MessageBoxResult.Yes)
-                    {
-                        // Abrimos el formulario de servicio.
-                        //
-                        // nuevoIdMoto = ID generado por SQL Server.
-                        // 1 = Estado "Ingresado".
-                        MainWindow? mainWindow =
-                            Window.GetWindow(this) as MainWindow;
-
-                        if (mainWindow != null)
-                        {
-                            mainWindow.ContentFrame.Navigate(
-                                new ServicioFormView(
-                                    nuevoIdMoto,
-                                    1));
-                        }
-                    }
-                    else
-                    {
-                        // Si eligió NO, volvemos a MotosView.
-                        NavegarAListaMotos();
-                    }
+                    anio = anioIngresado;
                 }
+
+
+                // -------------------------------------------------
+                // CREAR OBJETO
+                // -------------------------------------------------
+
+                Moto motoData = new Moto
+                {
+                    IdMoto = _idMotoActual,
+
+                    IdCliente = _idClienteSeleccionado,
+
+                    Marca = TxtMarca.Text.Trim(),
+
+                    Modelo = TxtModelo.Text.Trim(),
+
+                    Anio = anio,
+
+                    Patente = TxtPatente.Text.Trim(),
+
+                    NroMotor = TxtMotor.Text.Trim(),
+
+                    NroChasis = TxtChasis.Text.Trim(),
+
+                    Observaciones =
+                        TxtObservaciones.Text.Trim()
+                };
+
+
+                // -------------------------------------------------
+                // NUEVA MOTO
+                // -------------------------------------------------
+
+                if (_idMotoActual == 0)
+                {
+                    _repo.AddMoto(motoData);
+
+                    MessageBox.Show(
+                        "La moto se registró correctamente.",
+                        "Registro exitoso",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+
+
+                // -------------------------------------------------
+                // EDITAR MOTO
+                // -------------------------------------------------
+
                 else
                 {
-                    // =====================================================
-                    // MODO EDICIÓN
-                    // =====================================================
-
                     _repo.UpdateMoto(motoData);
 
                     MessageBox.Show(
-                        "Moto actualizada con éxito.",
-                        "Éxito",
+                        "Los datos de la moto se actualizaron correctamente.",
+                        "Actualización exitosa",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
-
-                    // Después de editar seguimos volviendo a MotosView.
-                    NavegarAListaMotos();
                 }
-            }
-            catch (SqlException ex)
-            {
-                MessageBox.Show(
-                    $"Error de base de datos: {ex.Message}",
-                    "Error SQL",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+
+
+                // -------------------------------------------------
+                // VOLVER A MOTOS
+                // -------------------------------------------------
+
+                MainWindow? mainWindow =
+                    Window.GetWindow(this) as MainWindow;
+
+
+                if (mainWindow != null)
+                {
+                    mainWindow.ContentFrame.Navigate(
+                        new MotosView());
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Ocurrió un error inesperado: {ex.Message}",
+                    "Ocurrió un error al guardar la moto.\n\n"
+                    + ex.Message,
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-            }
-        }
-
-        private void NavegarAListaMotos()
-        {
-            MainWindow? mainWindow =
-                Window.GetWindow(this) as MainWindow;
-
-            if (mainWindow != null)
-            {
-                mainWindow.ContentFrame.Navigate(
-                    new MotosView());
             }
         }
     }

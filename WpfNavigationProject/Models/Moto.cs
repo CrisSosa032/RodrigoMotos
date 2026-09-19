@@ -10,6 +10,9 @@ namespace WpfNavigationProject.Models
     {
         public int IdMoto { get; set; }
         public int IdCliente { get; set; }
+
+        public string NombreCliente { get; set; } = string.Empty;
+
         public string Marca { get; set; } = string.Empty;
         public string Modelo { get; set; } = string.Empty;
         public short? Anio { get; set; }

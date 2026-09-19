@@ -1,139 +1,434 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using WpfNavigationProject.Models;
-using WpfNavigationProject.DataAccess;
 using Microsoft.Data.SqlClient;
+using WpfNavigationProject.DataAccess;
+using WpfNavigationProject.Models;
 
 namespace WpfNavigationProject.Views
 {
     public partial class ServicioFormView : UserControl
     {
-        // Repositorio de servicios.
-        private ServiciosRepository _repo =
-            new ServiciosRepository();
+        private readonly ServiciosRepository _serviciosRepository;
+        private readonly ClienteRepository _clienteRepository;
+        private readonly MotoRepository _motoRepository;
 
-        // ID del servicio que estamos editando.
-        // Si es 0, significa que estamos creando uno nuevo.
-        private int _idServicioActual;
+        private int _idServicioActual = 0;
 
-        // ============================================================
-        // CONSTRUCTOR NORMAL
-        // ============================================================
-        //
-        // Se utiliza cuando:
-        // - Creamos un servicio normalmente.
-        // - Editamos un servicio existente.
-        //
-        public ServicioFormView(int idServicio)
+        private List<Cliente> _clientes = new List<Cliente>();
+        private List<Moto> _motosCliente = new List<Moto>();
+
+        private int _idClienteSeleccionado = 0;
+        private int _idMotoSeleccionada = 0;
+
+        private bool _seleccionandoCliente = false;
+
+        public ServicioFormView(int idServicio = 0)
         {
             InitializeComponent();
+
+            _serviciosRepository = new ServiciosRepository();
+            _clienteRepository = new ClienteRepository();
+            _motoRepository = new MotoRepository();
 
             _idServicioActual = idServicio;
 
-            // Si es un servicio nuevo, mostramos la fecha actual.
-            // La fecha definitiva será generada por SQL Server.
-            if (_idServicioActual == 0)
-            {
-                DpFechaEntrada.SelectedDate = DateTime.Today;
-            }
+            CargarClientes();
+            CargarEstados();
 
-            // Si el ID es mayor a 0, estamos editando.
             if (_idServicioActual > 0)
             {
-                PrellenarFormulario();
-
-                BtnCargarServicio.Content =
-                    "Actualizar Servicio";
+                CargarServicio();
+            }
+            else
+            {
+                SeleccionarEstadoIngresado();
             }
         }
 
         // ============================================================
-        // NUEVO CONSTRUCTOR
+        // CLIENTES
         // ============================================================
-        //
-        // Se utiliza cuando acabamos de registrar una moto
-        // y queremos agregarle inmediatamente un servicio.
-        //
-        public ServicioFormView(int idMoto, int idEstado)
-        {
-            InitializeComponent();
 
-            // Estamos creando un servicio nuevo.
-            _idServicioActual = 0;
-
-            // Precargamos el ID de la moto.
-            TxtIdMoto.Text = idMoto.ToString();
-
-            // Precargamos el estado.
-            TxtIdEstado.Text = idEstado.ToString();
-
-            // Mostramos la fecha actual.
-            DpFechaEntrada.SelectedDate = DateTime.Today;
-        }
-
-        private void PrellenarFormulario()
+        private void CargarClientes()
         {
             try
             {
-                // Buscamos los datos en la base de datos.
-                Servicios? servicio =
-                    _repo.GetServicioById(_idServicioActual);
+                _clientes = _clienteRepository.GetAllClientes();
 
-                if (servicio != null)
-                {
-                    // ID de la moto.
-                    TxtIdMoto.Text =
-                        servicio.IdMoto.ToString();
-
-                    // ID del estado.
-                    TxtIdEstado.Text =
-                        servicio.IdEstado.ToString();
-
-                    // Fecha original del servicio.
-                    DpFechaEntrada.SelectedDate =
-                        servicio.FechaEntrada;
-
-                    // Costo estimado.
-                    TxtCostoEstimado.Text =
-                        servicio.CostoEstimado.HasValue
-                            ? servicio.CostoEstimado.Value
-                                .ToString("0.00")
-                            : string.Empty;
-
-                    // Detalle.
-                    TxtDetalle.Text =
-                        servicio.Detalle;
-                }
+                LstClientes.ItemsSource = _clientes;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Error al cargar datos: {ex.Message}",
+                    "No se pudieron cargar los clientes.\n\n" + ex.Message,
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
 
+        private void TxtBuscarCliente_TextChanged(
+            object sender,
+            TextChangedEventArgs e)
+        {
+            if (_seleccionandoCliente)
+                return;
+
+            string texto = TxtBuscarCliente.Text.Trim();
+
+            LstMotos.ItemsSource = null;
+            LstMotos.Visibility = Visibility.Collapsed;
+
+            TxtTituloMotos.Visibility = Visibility.Collapsed;
+
+            LstMotos.SelectedItem = null;
+
+            TxtMotoSeleccionada.Text = "Seleccioná una moto";
+
+            _motosCliente = new List<Moto>();
+
+            _idClienteSeleccionado = 0;
+            _idMotoSeleccionada = 0;
+
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                LstClientes.ItemsSource = _clientes;
+
+                LstClientes.Visibility =
+                    _clientes.Count > 0
+                        ? Visibility.Visible
+                        : Visibility.Collapsed;
+
+                return;
+            }
+
+            var resultados = _clientes
+                .Where(c =>
+                    (!string.IsNullOrWhiteSpace(c.Nombre) &&
+                     c.Nombre.Contains(
+                         texto,
+                         StringComparison.OrdinalIgnoreCase))
+                    ||
+                    (!string.IsNullOrWhiteSpace(c.DNI) &&
+                     c.DNI.Contains(
+                         texto,
+                         StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            LstClientes.ItemsSource = resultados;
+
+            LstClientes.Visibility =
+                resultados.Count > 0
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private void LstClientes_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (LstClientes.SelectedItem is not Cliente cliente)
+                return;
+
+            _idClienteSeleccionado = cliente.IdCliente;
+
+            _seleccionandoCliente = true;
+
+            TxtBuscarCliente.Text = cliente.Nombre;
+
+            _seleccionandoCliente = false;
+
+            LstClientes.Visibility = Visibility.Collapsed;
+
+            CargarMotosCliente();
+        }
+
+        // ============================================================
+        // MOTOS DEL CLIENTE
+        // ============================================================
+
+        private void CargarMotosCliente()
+        {
+            if (_idClienteSeleccionado <= 0)
+                return;
+
+            try
+            {
+                _motosCliente =
+                    _motoRepository.GetMotosByCliente(
+                        _idClienteSeleccionado);
+
+                LstMotos.ItemsSource = null;
+                LstMotos.ItemsSource = _motosCliente;
+
+                LstMotos.SelectedItem = null;
+
+                _idMotoSeleccionada = 0;
+
+                TxtMotoSeleccionada.Text = "Seleccioná una moto";
+
+                if (_motosCliente.Count > 0)
+                {
+                    TxtTituloMotos.Visibility = Visibility.Visible;
+                    LstMotos.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    TxtTituloMotos.Visibility = Visibility.Collapsed;
+                    LstMotos.Visibility = Visibility.Collapsed;
+
+                    MessageBox.Show(
+                        "El cliente seleccionado no tiene motos registradas.",
+                        "Sin motos",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No se pudieron cargar las motos del cliente.\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void LstMotos_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (LstMotos.SelectedItem is not Moto moto)
+                return;
+
+            _idMotoSeleccionada = moto.IdMoto;
+
+            TxtMotoSeleccionada.Text =
+                $"{moto.Marca} {moto.Modelo} - {moto.Patente}";
+        }
+
+        // ============================================================
+        // LIMPIAR CLIENTE / MOTO
+        // ============================================================
+
+        private void BtnLimpiarCliente_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            _seleccionandoCliente = true;
+
+            TxtBuscarCliente.Clear();
+
+            _seleccionandoCliente = false;
+
+            LstClientes.SelectedItem = null;
+
+            LstClientes.ItemsSource = _clientes;
+
+            LstClientes.Visibility =
+                _clientes.Count > 0
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
+            LstMotos.ItemsSource = null;
+            LstMotos.SelectedItem = null;
+            LstMotos.Visibility = Visibility.Collapsed;
+
+            TxtTituloMotos.Visibility = Visibility.Collapsed;
+
+            TxtMotoSeleccionada.Text = "Seleccioná una moto";
+
+            _motosCliente = new List<Moto>();
+
+            _idClienteSeleccionado = 0;
+            _idMotoSeleccionada = 0;
+        }
+
+        // ============================================================
+        // ESTADOS
+        // ============================================================
+
+        private void CargarEstados()
+        {
+            List<EstadoServicioItem> estados =
+                new List<EstadoServicioItem>();
+
+            string sql = @"
+                SELECT
+                    IdEstado,
+                    NombreEstado
+                FROM EstadosServicio
+                ORDER BY IdEstado";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                try
+                {
+                    connection.Open();
+
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            estados.Add(
+                                new EstadoServicioItem
+                                {
+                                    IdEstado =
+                                        Convert.ToInt32(
+                                            reader["IdEstado"]),
+
+                                    NombreEstado =
+                                        reader["NombreEstado"]
+                                            .ToString() ?? string.Empty
+                                });
+                        }
+                    }
+
+                    CmbEstado.ItemsSource = estados;
+                    CmbEstado.DisplayMemberPath = "NombreEstado";
+                    CmbEstado.SelectedValuePath = "IdEstado";
+                }
+                catch (SqlException ex)
+                {
+                    MessageBox.Show(
+                        "No se pudieron cargar los estados del servicio.\n\n" +
+                        ex.Message,
+                        "Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void SeleccionarEstadoIngresado()
+        {
+            CmbEstado.SelectedValue = 1;
+        }
+
+        // ============================================================
+        // CARGAR SERVICIO PARA EDITAR
+        // ============================================================
+
+        private void CargarServicio()
+        {
+            try
+            {
+                Servicios? servicio =
+                    _serviciosRepository.GetServicioById(
+                        _idServicioActual);
+
+                if (servicio == null)
+                {
+                    MessageBox.Show(
+                        "No se encontró el servicio seleccionado.",
+                        "Servicio no encontrado",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    return;
+                }
+
+                int idCliente =
+                    _motoRepository.GetIdClienteByMoto(
+                        servicio.IdMoto);
+
+                Cliente? cliente =
+                    _clienteRepository.GetClienteById(
+                        idCliente);
+
+                if (cliente == null)
+                {
+                    MessageBox.Show(
+                        "No se encontró el cliente asociado al servicio.",
+                        "Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    return;
+                }
+
+                _idClienteSeleccionado = idCliente;
+
+                _seleccionandoCliente = true;
+
+                TxtBuscarCliente.Text = cliente.Nombre;
+
+                _seleccionandoCliente = false;
+
+                LstClientes.SelectedItem = null;
+                LstClientes.Visibility = Visibility.Collapsed;
+
+                CargarMotosCliente();
+
+                Moto? motoSeleccionada =
+                    _motosCliente.FirstOrDefault(
+                        m => m.IdMoto == servicio.IdMoto);
+
+                if (motoSeleccionada != null)
+                {
+                    LstMotos.SelectedItem = motoSeleccionada;
+
+                    _idMotoSeleccionada =
+                        motoSeleccionada.IdMoto;
+
+                    TxtMotoSeleccionada.Text =
+                        $"{motoSeleccionada.Marca} " +
+                        $"{motoSeleccionada.Modelo} - " +
+                        $"{motoSeleccionada.Patente}";
+                }
+
+                CmbEstado.SelectedValue =
+                    servicio.IdEstado;
+
+                TxtDetalle.Text =
+                    servicio.Detalle ?? string.Empty;
+
+                if (servicio.CostoEstimado.HasValue)
+                {
+                    TxtCosto.Text =
+                        servicio.CostoEstimado
+                            .Value
+                            .ToString("0.00");
+                }
+                else
+                {
+                    TxtCosto.Text = string.Empty;
+                }
+
+                TxtTitulo.Text = "Editar servicio";
+                BtnCargarServicio.Content = "Guardar cambios";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No se pudo cargar el servicio.\n\n" +
+                    ex.Message,
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        // ============================================================
+        // GUARDAR / ACTUALIZAR SERVICIO
+        // ============================================================
+
         private void BtnCargarServicio_Click(
             object sender,
             RoutedEventArgs e)
         {
-            // ========================================================
-            // 1. VALIDACIONES BÁSICAS
-            // ========================================================
-
-            //
-            // FechaEntrada YA NO se valida porque SQL Server
-            // la genera automáticamente.
-            //
-            if (string.IsNullOrWhiteSpace(TxtIdMoto.Text) ||
-                string.IsNullOrWhiteSpace(TxtIdEstado.Text) ||
-                string.IsNullOrWhiteSpace(TxtDetalle.Text))
+            if (_idClienteSeleccionado <= 0)
             {
                 MessageBox.Show(
-                    "El ID de la Moto, el ID del Estado y el Detalle son obligatorios.",
+                    "Seleccioná un cliente.",
                     "Validación",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -141,140 +436,152 @@ namespace WpfNavigationProject.Views
                 return;
             }
 
-            // Validamos que los IDs sean números enteros.
-            if (!int.TryParse(
-                    TxtIdMoto.Text,
-                    out int idMotoValido) ||
-                !int.TryParse(
-                    TxtIdEstado.Text,
-                    out int idEstadoValido))
+            if (_idMotoSeleccionada <= 0)
             {
                 MessageBox.Show(
-                    "Los campos de ID (Moto y Estado) deben ser números enteros válidos.",
-                    "Error de formato",
+                    "Seleccioná una moto.",
+                    "Validación",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
 
                 return;
             }
 
-            // ========================================================
-            // 2. VALIDAMOS EL COSTO ESTIMADO
-            // ========================================================
-
-            decimal? costoValido = null;
-
-            if (!string.IsNullOrWhiteSpace(
-                    TxtCostoEstimado.Text))
+            if (CmbEstado.SelectedValue == null)
             {
-                if (decimal.TryParse(
-                        TxtCostoEstimado.Text,
-                        out decimal parsedCosto))
-                {
-                    costoValido = parsedCosto;
-                }
-                else
+                MessageBox.Show(
+                    "Seleccioná un estado para el servicio.",
+                    "Validación",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            int idEstado;
+
+            try
+            {
+                idEstado =
+                    Convert.ToInt32(
+                        CmbEstado.SelectedValue);
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "El estado seleccionado no es válido.",
+                    "Validación",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            decimal? costoEstimado = null;
+
+            string textoCosto =
+                TxtCosto.Text.Trim();
+
+            if (!string.IsNullOrWhiteSpace(textoCosto))
+            {
+                textoCosto =
+                    textoCosto.Replace(
+                        "$",
+                        string.Empty).Trim();
+
+                if (!decimal.TryParse(
+                        textoCosto,
+                        out decimal costo))
                 {
                     MessageBox.Show(
-                        "El Costo Estimado debe ser un valor numérico válido.",
-                        "Error de formato",
+                        "Ingresá un costo válido.",
+                        "Validación",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
 
+                    TxtCosto.Focus();
+
                     return;
                 }
+
+                if (costo < 0)
+                {
+                    MessageBox.Show(
+                        "El costo no puede ser negativo.",
+                        "Validación",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    TxtCosto.Focus();
+
+                    return;
+                }
+
+                costoEstimado = costo;
             }
 
-            // ========================================================
-            // 3. CREAMOS EL OBJETO
-            // ========================================================
-
-            Servicios servicioData = new Servicios
-            {
-                IdServicio = _idServicioActual,
-
-                IdMoto = idMotoValido,
-
-                IdEstado = idEstadoValido,
-
-                FechaEntrada = _idServicioActual == 0
-                    ? DateTime.Today
-                    : DpFechaEntrada.SelectedDate
-                        ?? DateTime.Today,
-
-                CostoEstimado = costoValido,
-
-                Detalle = TxtDetalle.Text
-            };
-
-            // ========================================================
-            // 4. GUARDAMOS
-            // ========================================================
+            Servicios servicio =
+                new Servicios
+                {
+                    IdServicio = _idServicioActual,
+                    IdMoto = _idMotoSeleccionada,
+                    IdEstado = idEstado,
+                    Detalle = TxtDetalle.Text.Trim(),
+                    CostoEstimado = costoEstimado
+                };
 
             try
             {
                 if (_idServicioActual == 0)
                 {
-                    // MODO CREACIÓN.
-                    //
-                    // SQL Server genera automáticamente
-                    // FechaEntrada mediante DEFAULT.
-                    //
-                    _repo.AddServicio(servicioData);
+                    _serviciosRepository.AddServicio(
+                        servicio);
 
                     MessageBox.Show(
-                        "Servicio registrado con éxito.",
-                        "Éxito",
+                        "El servicio fue registrado correctamente.",
+                        "Servicio registrado",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
                 else
                 {
-                    // MODO EDICIÓN.
-                    //
-                    // FechaEntrada original NO se modifica.
-                    //
-                    _repo.UpdateServicio(servicioData);
+                    _serviciosRepository.UpdateServicio(
+                        servicio);
 
                     MessageBox.Show(
-                        "Servicio actualizado con éxito.",
-                        "Éxito",
+                        "El servicio fue actualizado correctamente.",
+                        "Servicio actualizado",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
 
-                // Volvemos a la lista de servicios.
-                NavegarAListaServicios();
-            }
-            catch (SqlException ex)
-            {
-                MessageBox.Show(
-                    $"Error de base de datos: {ex.Message}",
-                    "Error SQL",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                if (Window.GetWindow(this) is MainWindow mainWindow)
+                {
+                    mainWindow.ContentFrame.Navigate(
+                        new ServiciosView());
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Ocurrió un error inesperado: {ex.Message}",
+                    "No se pudo guardar el servicio.\n\n" +
+                    ex.Message,
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
 
-        private void NavegarAListaServicios()
-        {
-            MainWindow? mainWindow =
-                Window.GetWindow(this) as MainWindow;
+        // ============================================================
+        // MODELO AUXILIAR PARA ESTADOS
+        // ============================================================
 
-            if (mainWindow != null)
-            {
-                // Navegamos de vuelta al listado de servicios.
-                mainWindow.ContentFrame.Navigate(
-                    new ServiciosView());
-            }
+        public class EstadoServicioItem
+        {
+            public int IdEstado { get; set; }
+
+            public string NombreEstado { get; set; }
+                = string.Empty;
         }
     }
 }

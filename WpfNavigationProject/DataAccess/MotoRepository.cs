@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using WpfNavigationProject.Models;
 
 namespace WpfNavigationProject.DataAccess
@@ -19,6 +20,7 @@ namespace WpfNavigationProject.DataAccess
                 SELECT 
                     m.IdMoto,
                     m.IdCliente,
+                    c.Nombre AS NombreCliente,
                     m.Marca,
                     m.Modelo,
                     m.Anio,
@@ -30,7 +32,10 @@ namespace WpfNavigationProject.DataAccess
                 FROM Motos m
                 INNER JOIN Clientes c
                     ON m.IdCliente = c.IdCliente
-                ORDER BY m.IdMoto";
+                ORDER BY 
+                    m.Marca,
+                    m.Modelo,
+                    m.IdMoto";
 
             using (SqlConnection connection =
                    DbHelper.CreateConnection())
@@ -54,7 +59,7 @@ namespace WpfNavigationProject.DataAccess
                 catch (SqlException ex)
                 {
                     System.Diagnostics.Debug.WriteLine(
-                        "Error SQL: " + ex.Message);
+                        "Error SQL al obtener motos: " + ex.Message);
 
                     throw;
                 }
@@ -80,6 +85,7 @@ namespace WpfNavigationProject.DataAccess
                 SELECT
                     m.IdMoto,
                     m.IdCliente,
+                    c.Nombre AS NombreCliente,
                     m.Marca,
                     m.Modelo,
                     m.Anio,
@@ -139,72 +145,62 @@ namespace WpfNavigationProject.DataAccess
             using (SqlCommand command =
                    new SqlCommand(sql, connection))
             {
-                // ====================================================
-                // TEXTO Y CAMPO DE BÚSQUEDA
-                // ====================================================
-
-                command.Parameters.AddWithValue(
+                command.Parameters.Add(
                     "@Texto",
-                    texto ?? string.Empty);
+                    SqlDbType.NVarChar)
+                    .Value = texto ?? string.Empty;
 
-                command.Parameters.AddWithValue(
+                command.Parameters.Add(
                     "@Campo",
-                    campoBusqueda ?? "Marca");
+                    SqlDbType.NVarChar)
+                    .Value = campoBusqueda ?? "Marca";
 
+                // ----------------------------------------------------
+                // FECHA DESDE
+                // ----------------------------------------------------
 
-                // ====================================================
-                // FILTRO FECHA DESDE
-                // ====================================================
+                command.Parameters.Add(
+                    "@FechaDesde",
+                    SqlDbType.Date);
 
-                if (fechaDesde.HasValue)
+                command.Parameters["@FechaDesde"].Value =
+                    fechaDesde.HasValue
+                        ? fechaDesde.Value.Date
+                        : DBNull.Value;
+
+                // ----------------------------------------------------
+                // FECHA HASTA
+                // ----------------------------------------------------
+
+                command.Parameters.Add(
+                    "@FechaHasta",
+                    SqlDbType.Date);
+
+                command.Parameters["@FechaHasta"].Value =
+                    fechaHasta.HasValue
+                        ? fechaHasta.Value.Date
+                        : DBNull.Value;
+
+                try
                 {
-                    command.Parameters.Add(
-                        "@FechaDesde",
-                        System.Data.SqlDbType.Date)
-                        .Value = fechaDesde.Value.Date;
-                }
-                else
-                {
-                    command.Parameters.Add(
-                        "@FechaDesde",
-                        System.Data.SqlDbType.Date)
-                        .Value = DBNull.Value;
-                }
+                    connection.Open();
 
-
-                // ====================================================
-                // FILTRO FECHA HASTA
-                // ====================================================
-
-                if (fechaHasta.HasValue)
-                {
-                    command.Parameters.Add(
-                        "@FechaHasta",
-                        System.Data.SqlDbType.Date)
-                        .Value = fechaHasta.Value.Date;
-                }
-                else
-                {
-                    command.Parameters.Add(
-                        "@FechaHasta",
-                        System.Data.SqlDbType.Date)
-                        .Value = DBNull.Value;
-                }
-
-
-                // ====================================================
-                // EJECUTAR CONSULTA
-                // ====================================================
-
-                connection.Open();
-
-                using (SqlDataReader reader =
-                       command.ExecuteReader())
-                {
-                    while (reader.Read())
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
                     {
-                        motos.Add(MapearMoto(reader));
+                        while (reader.Read())
+                        {
+                            motos.Add(MapearMoto(reader));
+                        }
                     }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener motos filtradas: "
+                        + ex.Message);
+
+                    throw;
                 }
             }
 
@@ -222,6 +218,7 @@ namespace WpfNavigationProject.DataAccess
                 SELECT
                     m.IdMoto,
                     m.IdCliente,
+                    c.Nombre AS NombreCliente,
                     m.Marca,
                     m.Modelo,
                     m.Anio,
@@ -233,7 +230,7 @@ namespace WpfNavigationProject.DataAccess
                 FROM Motos m
                 INNER JOIN Clientes c
                     ON m.IdCliente = c.IdCliente
-                WHERE m.IdMoto = @Id";
+                WHERE m.IdMoto = @IdMoto";
 
             using (SqlConnection connection =
                    DbHelper.CreateConnection())
@@ -241,19 +238,30 @@ namespace WpfNavigationProject.DataAccess
             using (SqlCommand command =
                    new SqlCommand(sql, connection))
             {
-                command.Parameters.AddWithValue(
-                    "@Id",
-                    idMoto);
+                command.Parameters.Add(
+                    "@IdMoto",
+                    SqlDbType.Int)
+                    .Value = idMoto;
 
-                connection.Open();
-
-                using (SqlDataReader reader =
-                       command.ExecuteReader())
+                try
                 {
-                    if (reader.Read())
+                    connection.Open();
+
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
                     {
-                        return MapearMoto(reader);
+                        if (reader.Read())
+                        {
+                            return MapearMoto(reader);
+                        }
                     }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener moto: " + ex.Message);
+
+                    throw;
                 }
             }
 
@@ -267,85 +275,146 @@ namespace WpfNavigationProject.DataAccess
 
         public int AddMoto(Moto moto)
         {
-            string sql = @"
-                INSERT INTO Motos
-                (
-                    IdCliente,
-                    Marca,
-                    Modelo,
-                    Anio,
-                    Patente,
-                    NroMotor,
-                    NroChasis,
-                    Observaciones
-                )
-                VALUES
-                (
-                    @IdCliente,
-                    @Marca,
-                    @Modelo,
-                    @Anio,
-                    @Patente,
-                    @NroMotor,
-                    @NroChasis,
-                    @Observaciones
-                );
-
-                SELECT SCOPE_IDENTITY();";
-
             using (SqlConnection connection =
                    DbHelper.CreateConnection())
-
-            using (SqlCommand command =
-                   new SqlCommand(sql, connection))
             {
-                command.Parameters.AddWithValue(
-                    "@IdCliente",
-                    moto.IdCliente);
-
-                command.Parameters.AddWithValue(
-                    "@Marca",
-                    (object)moto.Marca ?? DBNull.Value);
-
-                command.Parameters.AddWithValue(
-                    "@Modelo",
-                    (object)moto.Modelo ?? DBNull.Value);
-
-                command.Parameters.AddWithValue(
-                    "@Anio",
-                    moto.Anio);
-
-                command.Parameters.AddWithValue(
-                    "@Patente",
-                    (object)moto.Patente ?? DBNull.Value);
-
-                command.Parameters.AddWithValue(
-                    "@NroMotor",
-                    (object)moto.NroMotor ?? DBNull.Value);
-
-                command.Parameters.AddWithValue(
-                    "@NroChasis",
-                    (object)moto.NroChasis ?? DBNull.Value);
-
-                command.Parameters.AddWithValue(
-                    "@Observaciones",
-                    (object)moto.Observaciones ?? DBNull.Value);
-
                 try
                 {
                     connection.Open();
 
-                    object result =
-                        command.ExecuteScalar();
+                    // ------------------------------------------------
+                    // VALIDAR CLIENTE
+                    // ------------------------------------------------
 
-                    return result != null
-                        ? Convert.ToInt32(result)
-                        : 0;
+                    string sqlValidarCliente = @"
+                        SELECT Activo
+                        FROM Clientes
+                        WHERE IdCliente = @IdCliente";
+
+                    using (SqlCommand commandValidar =
+                           new SqlCommand(
+                               sqlValidarCliente,
+                               connection))
+                    {
+                        commandValidar.Parameters.Add(
+                            "@IdCliente",
+                            SqlDbType.Int)
+                            .Value = moto.IdCliente;
+
+                        object resultado =
+                            commandValidar.ExecuteScalar();
+
+                        if (resultado == null)
+                        {
+                            throw new Exception(
+                                "No se encontró el cliente seleccionado.");
+                        }
+
+                        bool clienteActivo =
+                            Convert.ToBoolean(resultado);
+
+                        if (!clienteActivo)
+                        {
+                            throw new Exception(
+                                "No se puede registrar la moto porque " +
+                                "el cliente se encuentra dado de baja.");
+                        }
+                    }
+
+                    // ------------------------------------------------
+                    // INSERTAR MOTO
+                    // ------------------------------------------------
+
+                    string sql = @"
+                        INSERT INTO Motos
+                        (
+                            IdCliente,
+                            Marca,
+                            Modelo,
+                            Anio,
+                            Patente,
+                            NroMotor,
+                            NroChasis,
+                            Observaciones
+                        )
+                        VALUES
+                        (
+                            @IdCliente,
+                            @Marca,
+                            @Modelo,
+                            @Anio,
+                            @Patente,
+                            @NroMotor,
+                            @NroChasis,
+                            @Observaciones
+                        );
+
+                        SELECT SCOPE_IDENTITY();";
+
+                    using (SqlCommand command =
+                           new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.Add(
+                            "@IdCliente",
+                            SqlDbType.Int)
+                            .Value = moto.IdCliente;
+
+                        command.Parameters.Add(
+                            "@Marca",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Marca
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Modelo",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Modelo
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Anio",
+                            SqlDbType.SmallInt)
+                            .Value = moto.Anio.HasValue
+                                ? moto.Anio.Value
+                                : DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Patente",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Patente
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@NroMotor",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.NroMotor
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@NroChasis",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.NroChasis
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Observaciones",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Observaciones
+                                     ?? DBNull.Value;
+
+                        object result =
+                            command.ExecuteScalar();
+
+                        return result != null
+                            ? Convert.ToInt32(result)
+                            : 0;
+                    }
                 }
                 catch (SqlException ex)
                 {
                     System.Diagnostics.Debug.WriteLine(
-                        $"Error SQL al insertar moto: {ex.Message}");
+                        "Error SQL al insertar moto: "
+                        + ex.Message);
 
                     throw;
                 }
@@ -359,64 +428,136 @@ namespace WpfNavigationProject.DataAccess
 
         public void UpdateMoto(Moto moto)
         {
-            string sql = @"
-                UPDATE Motos
-                SET
-                    IdCliente = @IdCliente,
-                    Marca = @Marca,
-                    Modelo = @Modelo,
-                    Anio = @Anio,
-                    Patente = @Patente,
-                    NroMotor = @NroMotor,
-                    NroChasis = @NroChasis,
-                    Observaciones = @Observaciones
-                WHERE IdMoto = @Id";
-
             using (SqlConnection connection =
                    DbHelper.CreateConnection())
-
-            using (SqlCommand command =
-                   new SqlCommand(sql, connection))
             {
-                command.Parameters.AddWithValue(
-                    "@Id",
-                    moto.IdMoto);
+                try
+                {
+                    connection.Open();
 
-                command.Parameters.AddWithValue(
-                    "@IdCliente",
-                    moto.IdCliente);
+                    // ------------------------------------------------
+                    // VALIDAR CLIENTE
+                    // ------------------------------------------------
 
-                command.Parameters.AddWithValue(
-                    "@Marca",
-                    (object)moto.Marca ?? DBNull.Value);
+                    string sqlValidarCliente = @"
+                        SELECT Activo
+                        FROM Clientes
+                        WHERE IdCliente = @IdCliente";
 
-                command.Parameters.AddWithValue(
-                    "@Modelo",
-                    (object)moto.Modelo ?? DBNull.Value);
+                    using (SqlCommand commandValidar =
+                           new SqlCommand(
+                               sqlValidarCliente,
+                               connection))
+                    {
+                        commandValidar.Parameters.Add(
+                            "@IdCliente",
+                            SqlDbType.Int)
+                            .Value = moto.IdCliente;
 
-                command.Parameters.AddWithValue(
-                    "@Anio",
-                    moto.Anio);
+                        object resultado =
+                            commandValidar.ExecuteScalar();
 
-                command.Parameters.AddWithValue(
-                    "@Patente",
-                    (object)moto.Patente ?? DBNull.Value);
+                        if (resultado == null)
+                        {
+                            throw new Exception(
+                                "No se encontró el cliente seleccionado.");
+                        }
 
-                command.Parameters.AddWithValue(
-                    "@NroMotor",
-                    (object)moto.NroMotor ?? DBNull.Value);
+                        bool clienteActivo =
+                            Convert.ToBoolean(resultado);
 
-                command.Parameters.AddWithValue(
-                    "@NroChasis",
-                    (object)moto.NroChasis ?? DBNull.Value);
+                        if (!clienteActivo)
+                        {
+                            throw new Exception(
+                                "No se puede actualizar la moto porque " +
+                                "el cliente se encuentra dado de baja.");
+                        }
+                    }
 
-                command.Parameters.AddWithValue(
-                    "@Observaciones",
-                    (object)moto.Observaciones ?? DBNull.Value);
+                    // ------------------------------------------------
+                    // ACTUALIZAR MOTO
+                    // ------------------------------------------------
 
-                connection.Open();
+                    string sql = @"
+                        UPDATE Motos
+                        SET
+                            IdCliente = @IdCliente,
+                            Marca = @Marca,
+                            Modelo = @Modelo,
+                            Anio = @Anio,
+                            Patente = @Patente,
+                            NroMotor = @NroMotor,
+                            NroChasis = @NroChasis,
+                            Observaciones = @Observaciones
+                        WHERE IdMoto = @IdMoto";
 
-                command.ExecuteNonQuery();
+                    using (SqlCommand command =
+                           new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.Add(
+                            "@IdMoto",
+                            SqlDbType.Int)
+                            .Value = moto.IdMoto;
+
+                        command.Parameters.Add(
+                            "@IdCliente",
+                            SqlDbType.Int)
+                            .Value = moto.IdCliente;
+
+                        command.Parameters.Add(
+                            "@Marca",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Marca
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Modelo",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Modelo
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Anio",
+                            SqlDbType.SmallInt)
+                            .Value = moto.Anio.HasValue
+                                ? moto.Anio.Value
+                                : DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Patente",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Patente
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@NroMotor",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.NroMotor
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@NroChasis",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.NroChasis
+                                     ?? DBNull.Value;
+
+                        command.Parameters.Add(
+                            "@Observaciones",
+                            SqlDbType.NVarChar)
+                            .Value = (object)moto.Observaciones
+                                     ?? DBNull.Value;
+
+                        command.ExecuteNonQuery();
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al actualizar moto: "
+                        + ex.Message);
+
+                    throw;
+                }
             }
         }
 
@@ -440,22 +581,34 @@ namespace WpfNavigationProject.DataAccess
             using (SqlCommand command =
                    new SqlCommand(sql, connection))
             {
-                command.Parameters.AddWithValue(
+                command.Parameters.Add(
                     "@IdMoto",
-                    idMoto);
+                    SqlDbType.Int)
+                    .Value = idMoto;
 
-                connection.Open();
-
-                object resultado =
-                    command.ExecuteScalar();
-
-                if (resultado == null)
+                try
                 {
-                    throw new Exception(
-                        "No se encontró el cliente dueño de esta moto.");
-                }
+                    connection.Open();
 
-                return Convert.ToBoolean(resultado);
+                    object resultado =
+                        command.ExecuteScalar();
+
+                    if (resultado == null)
+                    {
+                        throw new Exception(
+                            "No se encontró el cliente dueño de esta moto.");
+                    }
+
+                    return Convert.ToBoolean(resultado);
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al verificar cliente de la moto: "
+                        + ex.Message);
+
+                    throw;
+                }
             }
         }
 
@@ -477,22 +630,34 @@ namespace WpfNavigationProject.DataAccess
             using (SqlCommand command =
                    new SqlCommand(sql, connection))
             {
-                command.Parameters.AddWithValue(
+                command.Parameters.Add(
                     "@IdMoto",
-                    idMoto);
+                    SqlDbType.Int)
+                    .Value = idMoto;
 
-                connection.Open();
-
-                object resultado =
-                    command.ExecuteScalar();
-
-                if (resultado == null)
+                try
                 {
-                    throw new Exception(
-                        "No se encontró la moto.");
-                }
+                    connection.Open();
 
-                return Convert.ToInt32(resultado);
+                    object resultado =
+                        command.ExecuteScalar();
+
+                    if (resultado == null)
+                    {
+                        throw new Exception(
+                            "No se encontró la moto.");
+                    }
+
+                    return Convert.ToInt32(resultado);
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener el cliente de la moto: "
+                        + ex.Message);
+
+                    throw;
+                }
             }
         }
 
@@ -501,11 +666,6 @@ namespace WpfNavigationProject.DataAccess
         // MAPEAR MOTO
         // ============================================================
 
-        /// <summary>
-        /// Convierte una fila de SQL en un objeto Moto.
-        /// Centralizar esto evita repetir el mismo código
-        /// en todos los métodos del repositorio.
-        /// </summary>
         private Moto MapearMoto(SqlDataReader reader)
         {
             return new Moto
@@ -516,6 +676,10 @@ namespace WpfNavigationProject.DataAccess
                 IdCliente = reader.GetInt32(
                     reader.GetOrdinal("IdCliente")),
 
+                NombreCliente = reader["NombreCliente"] != DBNull.Value
+                    ? reader["NombreCliente"].ToString()!
+                    : string.Empty,
+
                 Marca = reader["Marca"] != DBNull.Value
                     ? reader["Marca"].ToString()!
                     : string.Empty,
@@ -525,8 +689,8 @@ namespace WpfNavigationProject.DataAccess
                     : string.Empty,
 
                 Anio = reader["Anio"] != DBNull.Value
-                    ? (short)Convert.ToInt32(reader["Anio"])
-                    : (short)0,
+                    ? Convert.ToInt16(reader["Anio"])
+                    : null,
 
                 Patente = reader["Patente"] != DBNull.Value
                     ? reader["Patente"].ToString()!
@@ -548,6 +712,75 @@ namespace WpfNavigationProject.DataAccess
                     ? Convert.ToDateTime(reader["FechaAlta"])
                     : DateTime.MinValue
             };
+        }
+
+
+
+        // ============================================================
+        // OBTENER MOTOS DE UN CLIENTE
+        // ============================================================
+
+        public List<Moto> GetMotosByCliente(int idCliente)
+        {
+            List<Moto> motos = new List<Moto>();
+
+            string sql = @"
+                        SELECT
+                            m.IdMoto,
+                            m.IdCliente,
+                            c.Nombre AS NombreCliente,
+                            m.Marca,
+                            m.Modelo,
+                            m.Anio,
+                            m.Patente,
+                            m.NroMotor,
+                            m.NroChasis,
+                            m.Observaciones,
+                            m.FechaAlta
+                        FROM Motos m
+                        INNER JOIN Clientes c
+                            ON m.IdCliente = c.IdCliente
+                        WHERE m.IdCliente = @IdCliente
+                        ORDER BY
+                            m.Marca,
+                            m.Modelo,
+                            m.IdMoto";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add(
+                    "@IdCliente",
+                    SqlDbType.Int)
+                    .Value = idCliente;
+
+                try
+                {
+                    connection.Open();
+
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            motos.Add(MapearMoto(reader));
+                        }
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener motos del cliente: "
+                        + ex.Message);
+
+                    throw;
+                }
+            }
+
+            return motos;
         }
     }
 }

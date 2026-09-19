@@ -4,250 +4,336 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="600"
-             d:DesignWidth="1000"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             Background="Transparent"
              Loaded="UserControl_Loaded">
 
-    <Border Background="White"
-            CornerRadius="10"
-            Padding="20"
-            Margin="10">
 
-        <Grid>
+    <UserControl.Resources>
+
+        <!-- Sombra estándar -->
+        <DropShadowEffect x:Key="ShadowDepth3"
+                          Color="Black"
+                          Direction="270"
+                          ShadowDepth="3"
+                          BlurRadius="5"
+                          Opacity="0.1"/>
+
+    </UserControl.Resources>
+
+
+    <Border Background="White"
+            CornerRadius="15"
+            Padding="30"
+            Effect="{StaticResource ShadowDepth3}">
+
+        <Grid Cursor="">
 
             <Grid.RowDefinitions>
+
+                <!-- Título -->
                 <RowDefinition Height="Auto"/>
+
+                <!-- Filtros -->
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="15"/>
+
+                <!-- Tabla -->
                 <RowDefinition Height="*"/>
+
+                <!-- Botón -->
                 <RowDefinition Height="Auto"/>
+
             </Grid.RowDefinitions>
 
 
-            <!-- ================================================= -->
+            <!-- ===================================================== -->
             <!-- TÍTULO -->
-            <!-- ================================================= -->
+            <!-- ===================================================== -->
 
             <TextBlock Grid.Row="0"
                        Text="Listado de Servicios"
-                       FontSize="24"
+                       FontSize="36"
                        FontWeight="Bold"
-                       Foreground="#1E293B"
-                       Margin="0,0,0,15"/>
+                       Foreground="#333333"
+                       Margin="0,-10,0,15"
+                       TextAlignment="Center"/>
 
 
-            <!-- ================================================= -->
+            
+            <!-- ===================================================== -->
             <!-- PANEL DE FILTROS -->
-            <!-- ================================================= -->
+            <!-- ===================================================== -->
 
             <Border Grid.Row="1"
-                    Background="#F8FAFC"
-                    BorderBrush="#E2E8F0"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="15">
+        Background="#F5F7FA"
+        CornerRadius="10"
+        Padding="15"
+        Margin="0,0,0,15">
 
                 <Grid>
 
                     <Grid.RowDefinitions>
+
+                        <!-- Primera fila: búsqueda + botón -->
                         <RowDefinition Height="Auto"/>
+
+                        <!-- Segunda fila: estado + fechas -->
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+
                     </Grid.RowDefinitions>
 
 
-                    <!-- ============================= -->
-                    <!-- BÚSQUEDA -->
-                    <!-- ============================= -->
+                    <!-- ================================================= -->
+                    <!-- PRIMERA FILA -->
+                    <!-- BUSCAR + BUSCAR POR + LIMPIAR -->
+                    <!-- ================================================= -->
 
                     <Grid Grid.Row="0"
-                          Margin="0,0,0,12">
+              Margin="0,0,0,12">
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="180"/>
+
+                            <!-- Buscar -->
+                            <ColumnDefinition Width="1.7*"/>
+
+                            <!-- Campo -->
+                            <ColumnDefinition Width="1.1*"/>
+
+                            <!-- Espacio -->
+                            <ColumnDefinition Width="20"/>
+
+                            <!-- Botón -->
+                            <ColumnDefinition Width="Auto"/>
+
                         </Grid.ColumnDefinitions>
 
-                        <TextBox x:Name="TxtBuscar"
-                                 Grid.Column="0"
-                                 Height="32"
-                                 Padding="10,5"
-                                 FontSize="14"
-                                 VerticalContentAlignment="Center"
-                                 TextChanged="TxtBuscar_TextChanged"/>
 
-                        <ComboBox x:Name="CmbBuscarPor"
-                                  Grid.Column="1"
-                                  Height="32"
-                                  Margin="10,0,0,0"
-                                  VerticalContentAlignment="Center"
-                                  SelectedIndex="0"
-                                  SelectionChanged="CmbBuscarPor_SelectionChanged">
+                        <!-- ============================= -->
+                        <!-- BUSCAR -->
+                        <!-- ============================= -->
 
-                            <ComboBoxItem Content="Cliente"
-                                          Tag="Nombre"/>
+                        <StackPanel Grid.Column="0"
+                        Margin="0,0,10,0">
 
-                            <ComboBoxItem Content="Marca"
-                                          Tag="Marca"/>
+                            <TextBlock Text="Buscar"
+                           FontWeight="SemiBold"
+                           Foreground="#444444"
+                           Margin="0,0,0,5"/>
 
-                            <ComboBoxItem Content="Modelo"
-                                          Tag="Modelo"/>
+                            <TextBox x:Name="TxtBuscar"
+                         Height="32"
+                         Padding="8,4"
+                         VerticalContentAlignment="Center"
+                         TextChanged="TxtBuscar_TextChanged"/>
 
-                        </ComboBox>
+                        </StackPanel>
+
+
+                        <!-- ============================= -->
+                        <!-- BUSCAR POR -->
+                        <!-- ============================= -->
+
+                        <StackPanel Grid.Column="1">
+
+                            <TextBlock Text="Buscar por"
+                           FontWeight="SemiBold"
+                           Foreground="#444444"
+                           Margin="0,0,0,5"/>
+
+                            <ComboBox x:Name="CmbBuscarPor"
+                          Height="32"
+                          SelectedIndex="0"
+                          SelectionChanged="CmbBuscarPor_SelectionChanged">
+
+                                <ComboBoxItem Content="Cliente"
+                                  Tag="Nombre"/>
+
+                                <ComboBoxItem Content="Marca"
+                                  Tag="Marca"/>
+
+                                <ComboBoxItem Content="Modelo"
+                                  Tag="Modelo"/>
+
+                            </ComboBox>
+
+                        </StackPanel>
+
+
+                        <!-- ============================= -->
+                        <!-- BOTÓN LIMPIAR -->
+                        <!-- ============================= -->
+
+                        <Button Grid.Column="3"
+                    Content="🧹 Limpiar"
+                    Height="32"
+                    Width="100"
+                    VerticalAlignment="Bottom"
+                    Click="BtnLimpiarFiltros_Click"
+                    Style="{StaticResource AccionButtonStyle}"/>
 
                     </Grid>
 
 
-                    <!-- ============================= -->
-                    <!-- ESTADO -->
-                    <!-- ============================= -->
+                    <!-- ================================================= -->
+                    <!-- SEGUNDA FILA -->
+                    <!-- ESTADO + FECHAS -->
+                    <!-- ================================================= -->
 
-                    <StackPanel Grid.Row="1"
-                                Orientation="Horizontal"
-                                Margin="0,0,0,12">
-
-                        <TextBlock Text="Estado:"
-                                   FontWeight="SemiBold"
-                                   Foreground="#475569"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,15,0"/>
-
-                        <RadioButton x:Name="RbTodos"
-                                     Content="Todos"
-                                     GroupName="EstadoServicio"
-                                     Margin="0,0,20,0"
-                                     IsChecked="True"
-                                     Checked="FiltroCambiado"/>
-
-                        <RadioButton x:Name="RbIngresado"
-                                     Content="Ingresado"
-                                     GroupName="EstadoServicio"
-                                     Margin="0,0,20,0"
-                                     Checked="FiltroCambiado"/>
-
-                        <RadioButton x:Name="RbEnProceso"
-                                     Content="En proceso"
-                                     GroupName="EstadoServicio"
-                                     Margin="0,0,20,0"
-                                     Checked="FiltroCambiado"/>
-
-                        <RadioButton x:Name="RbTerminado"
-                                     Content="Terminado"
-                                     GroupName="EstadoServicio"
-                                     Margin="0,0,20,0"
-                                     Checked="FiltroCambiado"/>
-
-                        <RadioButton x:Name="RbPagado"
-                                     Content="Pagado"
-                                     GroupName="EstadoServicio"
-                                     Margin="0,0,20,0"
-                                     Checked="FiltroCambiado"/>
-
-                    </StackPanel>
-
-
-                    <!-- ============================= -->
-                    <!-- FECHAS -->
-                    <!-- ============================= -->
-
-                    <Grid Grid.Row="2">
+                    <Grid Grid.Row="1">
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="140"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="140"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+
+                            <!-- Estado -->
+                            <ColumnDefinition Width="2.7*"/>
+
+                            <!-- Fecha desde -->
+                            <ColumnDefinition Width="1.3*"/>
+
+                            <!-- Fecha hasta -->
+                            <ColumnDefinition Width="1.3*"/>
+
                         </Grid.ColumnDefinitions>
 
 
-                        <TextBlock Grid.Column="0"
-                                   Text="Fecha de ingreso:"
-                                   FontWeight="SemiBold"
-                                   Foreground="#475569"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"/>
+                        <!-- ================================================= -->
+                        <!-- ESTADO -->
+                        <!-- ================================================= -->
 
-                        <DatePicker x:Name="DpFechaDesde"
-                                    Grid.Column="1"
-                                    Height="32"
-                                    SelectedDateChanged="Fecha_SelectedDateChanged"/>
+                        <StackPanel Grid.Column="0"
+                        Margin="0,0,20,0">
+
+                            <TextBlock Text="Estado"
+                           FontWeight="SemiBold"
+                           Foreground="#444444"
+                           Margin="0,0,0,5"/>
+
+                            <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center">
+
+                                <RadioButton x:Name="RbTodos"
+                                 Content="Todos"
+                                 GroupName="EstadoServicio"
+                                 Margin="0,0,18,0"
+                                 IsChecked="True"
+                                 Checked="FiltroCambiado"/>
+
+                                <RadioButton x:Name="RbIngresado"
+                                 Content="Ingresado"
+                                 GroupName="EstadoServicio"
+                                 Margin="0,0,18,0"
+                                 Checked="FiltroCambiado"/>
+
+                                <RadioButton x:Name="RbEnProceso"
+                                 Content="En proceso"
+                                 GroupName="EstadoServicio"
+                                 Margin="0,0,18,0"
+                                 Checked="FiltroCambiado"/>
+
+                                <RadioButton x:Name="RbTerminado"
+                                 Content="Terminado"
+                                 GroupName="EstadoServicio"
+                                 Margin="0,0,18,0"
+                                 Checked="FiltroCambiado"/>
+
+                                <RadioButton x:Name="RbPagado"
+                                 Content="Pagado"
+                                 Checked="FiltroCambiado"/>
+
+                            </StackPanel>
+
+                        </StackPanel>
 
 
-                        <TextBlock Grid.Column="2"
-                                   Text="Hasta:"
-                                   Foreground="#475569"
-                                   VerticalAlignment="Center"
-                                   Margin="15,0,10,0"/>
+                        <!-- ================================================= -->
+                        <!-- FECHA DESDE -->
+                        <!-- ================================================= -->
 
-                        <DatePicker x:Name="DpFechaHasta"
-                                    Grid.Column="3"
-                                    Height="32"
-                                    SelectedDateChanged="Fecha_SelectedDateChanged"/>
+                        <StackPanel Grid.Column="1"
+                        Margin="0,0,15,0">
+
+                            <TextBlock Text="Ingreso desde"
+                           FontWeight="SemiBold"
+                           Foreground="#444444"
+                           Margin="0,0,0,5"/>
+
+                            <DatePicker x:Name="DpFechaDesde"
+                            Height="32"
+                            SelectedDateChanged="Fecha_SelectedDateChanged"/>
+
+                        </StackPanel>
 
 
-                        <Button x:Name="BtnLimpiarFiltros"
-                                Grid.Column="5"
-                                Content="Limpiar filtros"
-                                Height="32"
-                                Padding="15,0"
-                                Background="#E2E8F0"
-                                Foreground="#334155"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                Click="BtnLimpiarFiltros_Click"/>
+                        <!-- ================================================= -->
+                        <!-- FECHA HASTA -->
+                        <!-- ================================================= -->
+
+                        <StackPanel Grid.Column="2">
+
+                            <TextBlock Text="Ingreso hasta"
+                           FontWeight="SemiBold"
+                           Foreground="#444444"
+                           Margin="0,0,0,5"/>
+
+                            <DatePicker x:Name="DpFechaHasta"
+                            Height="32"
+                            SelectedDateChanged="Fecha_SelectedDateChanged"/>
+
+                        </StackPanel>
 
                     </Grid>
 
                 </Grid>
 
             </Border>
+            
 
 
-            <!-- ================================================= -->
-            <!-- DATAGRID -->
-            <!-- ================================================= -->
 
-            <DataGrid x:Name="ServiciosDataGrid"
-                      Grid.Row="3"
+            <!-- ===================================================== -->
+            <!-- TABLA DE SERVICIOS -->
+            <!-- ===================================================== -->
+
+            <DataGrid Grid.Row="2"
+                      Name="ServiciosDataGrid"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       SelectionMode="Single"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
-                      HeadersVisibility="Column"
                       GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#E5E7EB"
-                      Background="White"
-                      RowBackground="White"
-                      AlternatingRowBackground="#F8FAFC"
-                      BorderThickness="0"
-                      FontSize="13">
+                      RowBackground="LightGray"
+                      AlternatingRowBackground="#FFEFEFEF"
+                      CanUserResizeColumns="True"
+                      Foreground="#FF2A2A2A"
+                      FontSize="14"
+                      FontWeight="SemiBold"
+                      HeadersVisibility="Column">
+
 
                 <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader">
+
+                    <Style TargetType="{x:Type DataGridColumnHeader}">
 
                         <Setter Property="Background"
-                                Value="#2563EB"/>
+                                Value="#FF007ACC"/>
 
                         <Setter Property="Foreground"
                                 Value="White"/>
 
-                        <Setter Property="FontWeight"
-                                Value="SemiBold"/>
-
-                        <Setter Property="Padding"
-                                Value="8"/>
-
                         <Setter Property="HorizontalContentAlignment"
                                 Value="Center"/>
 
+                        <Setter Property="Padding"
+                                Value="5"/>
+
                     </Style>
+
                 </DataGrid.ColumnHeaderStyle>
 
 
                 <DataGrid.Columns>
+
 
                     <!-- ================================================= -->
                     <!-- CLIENTE -->
@@ -255,7 +341,7 @@
 
                     <DataGridTextColumn Header="Cliente"
                                         Binding="{Binding NombreCliente}"
-                                        Width="2*"/>
+                                        Width="1.5*"/>
 
 
                     <!-- ================================================= -->
@@ -264,7 +350,7 @@
 
                     <DataGridTextColumn Header="Marca"
                                         Binding="{Binding MarcaMoto}"
-                                        Width="1.3*"/>
+                                        Width="1.1*"/>
 
 
                     <!-- ================================================= -->
@@ -273,7 +359,7 @@
 
                     <DataGridTextColumn Header="Modelo"
                                         Binding="{Binding ModeloMoto}"
-                                        Width="1.3*"/>
+                                        Width="1.2*"/>
 
 
                     <!-- ================================================= -->
@@ -289,9 +375,22 @@
                     <!-- FECHA DE INGRESO -->
                     <!-- ================================================= -->
 
-                    <DataGridTextColumn Header="Fecha de ingreso"
+                    <DataGridTextColumn Header="Fecha Ingreso"
                                         Binding="{Binding FechaEntrada, StringFormat={}{0:dd/MM/yyyy}}"
-                                        Width="1.4*"/>
+                                        Width="110">
+
+                        <DataGridTextColumn.ElementStyle>
+
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Center"/>
+
+                            </Style>
+
+                        </DataGridTextColumn.ElementStyle>
+
+                    </DataGridTextColumn>
 
 
                     <!-- ================================================= -->
@@ -300,7 +399,7 @@
 
                     <DataGridTextColumn Header="Detalle"
                                         Binding="{Binding Detalle}"
-                                        Width="2.5*"/>
+                                        Width="2.2*"/>
 
 
                     <!-- ================================================= -->
@@ -309,29 +408,38 @@
 
                     <DataGridTextColumn Header="Precio"
                                         Binding="{Binding CostoEstimado, StringFormat={}{0:C0}}"
-                                        Width="1.2*"/>
+                                        Width="1.2*">
+
+                        <DataGridTextColumn.ElementStyle>
+
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Center"/>
+
+                            </Style>
+
+                        </DataGridTextColumn.ElementStyle>
+
+                    </DataGridTextColumn>
 
 
                     <!-- ================================================= -->
-                    <!-- ACCIONES -->
+                    <!-- EDITAR -->
                     <!-- ================================================= -->
 
-                    <DataGridTemplateColumn Header="Acciones"
-                                            Width="100">
+                    <DataGridTemplateColumn Header="Editar"
+                                            Width="110">
 
                         <DataGridTemplateColumn.CellTemplate>
 
                             <DataTemplate>
 
-                                <Button Content="Editar"
-                                        Width="75"
-                                        Height="28"
-                                        Background="#2563EB"
-                                        Foreground="White"
-                                        BorderThickness="0"
-                                        Cursor="Hand"
+                                <Button Content="✏️ Editar"
+                                        Click="BtnEditar_Click"
+                                        Margin="2"
                                         Tag="{Binding IdServicio}"
-                                        Click="BtnEditar_Click"/>
+                                        Style="{StaticResource AccionButtonStyle}"/>
 
                             </DataTemplate>
 
@@ -339,27 +447,25 @@
 
                     </DataGridTemplateColumn>
 
+
                 </DataGrid.Columns>
 
             </DataGrid>
 
 
-            <!-- ================================================= -->
-            <!-- BOTÓN NUEVO SERVICIO -->
-            <!-- ================================================= -->
+            <!-- ===================================================== -->
+            <!-- NUEVO SERVICIO -->
+            <!-- ===================================================== -->
 
-            <Button Grid.Row="4"
+            <Button Grid.Row="3"
                     Content="+ Nuevo Servicio"
-                    Width="170"
-                    Height="38"
-                    HorizontalAlignment="Right"
-                    Margin="0,15,0,0"
-                    Background="#2563EB"
-                    Foreground="White"
-                    FontWeight="SemiBold"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="BtnNuevoServicio_Click"/>
+                    Name="BtnNuevoServicio"
+                    Click="BtnNuevoServicio_Click"
+                    Style="{StaticResource AccionButtonStyle}"
+                    Margin="0,20,0,0"
+                    HorizontalAlignment="Center"
+                    Width="180"
+                    Height="35"/>
 
         </Grid>
 

@@ -71,22 +71,19 @@
 
                 <Grid>
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-
                     <Grid.ColumnDefinitions>
 
-                        <!-- Buscador -->
-                        <ColumnDefinition Width="2.2*"/>
+                        <!-- Buscar -->
+                        <ColumnDefinition Width="2.1*"/>
 
                         <!-- Campo -->
                         <ColumnDefinition Width="1.2*"/>
 
-                        <!-- Fecha -->
-                        <ColumnDefinition Width="1.2*"/>
+                        <!-- Fecha desde -->
+                        <ColumnDefinition Width="1.25*"/>
+
+                        <!-- Fecha hasta -->
+                        <ColumnDefinition Width="1.25*"/>
 
                         <!-- Botón -->
                         <ColumnDefinition Width="Auto"/>
@@ -98,9 +95,8 @@
                     <!-- BUSCAR -->
                     <!-- ================================================= -->
 
-                    <StackPanel Grid.Row="0"
-                                Grid.Column="0"
-                                Margin="0,0,10,10">
+                    <StackPanel Grid.Column="0"
+                                Margin="0,0,10,0">
 
                         <TextBlock Text="Buscar"
                                    FontWeight="SemiBold"
@@ -120,9 +116,8 @@
                     <!-- CAMPO DE BÚSQUEDA -->
                     <!-- ================================================= -->
 
-                    <StackPanel Grid.Row="0"
-                                Grid.Column="1"
-                                Margin="0,0,10,10">
+                    <StackPanel Grid.Column="1"
+                                Margin="0,0,10,0">
 
                         <TextBlock Text="Buscar por"
                                    FontWeight="SemiBold"
@@ -134,10 +129,14 @@
                                   SelectedIndex="0"
                                   SelectionChanged="Filtro_Changed">
 
-                            <ComboBoxItem Content="Marca"/>
-                            <ComboBoxItem Content="Modelo"/>
-                            <ComboBoxItem Content="Patente"/>
+                            <!-- Primero Cliente -->
                             <ComboBoxItem Content="Cliente"/>
+
+                            <ComboBoxItem Content="Marca"/>
+
+                            <ComboBoxItem Content="Modelo"/>
+
+                            <ComboBoxItem Content="Patente"/>
 
                         </ComboBox>
 
@@ -145,39 +144,10 @@
 
 
                     <!-- ================================================= -->
-                    <!-- BOTÓN LIMPIAR -->
-                    <!-- ================================================= -->
-
-                    <Button Grid.Row="0"
-                            Grid.Column="3"
-                            Content="🧹 Limpiar"
-                            Height="32"
-                            Width="100"
-                            VerticalAlignment="Bottom"
-                            Margin="0,0,0,10"
-                            Click="BtnLimpiarFiltros_Click"
-                            Style="{StaticResource AccionButtonStyle}"/>
-
-
-                    <!-- ================================================= -->
-                    <!-- INFORMACIÓN -->
-                    <!-- ================================================= -->
-
-                    <TextBlock Grid.Row="1"
-                               Grid.Column="0"
-                               Grid.ColumnSpan="2"
-                               Text="Los filtros se aplican automáticamente."
-                               Foreground="#777777"
-                               FontSize="12"
-                               VerticalAlignment="Center"/>
-
-
-                    <!-- ================================================= -->
                     <!-- FECHA DESDE -->
                     <!-- ================================================= -->
 
-                    <StackPanel Grid.Row="1"
-                                Grid.Column="2"
+                    <StackPanel Grid.Column="2"
                                 Margin="0,0,10,0">
 
                         <TextBlock Text="Alta desde"
@@ -196,8 +166,7 @@
                     <!-- FECHA HASTA -->
                     <!-- ================================================= -->
 
-                    <StackPanel Grid.Row="1"
-                                Grid.Column="3"
+                    <StackPanel Grid.Column="3"
                                 Margin="0,0,10,0">
 
                         <TextBlock Text="Alta hasta"
@@ -210,6 +179,19 @@
                                     SelectedDateChanged="Filtro_Changed"/>
 
                     </StackPanel>
+
+
+                    <!-- ================================================= -->
+                    <!-- BOTÓN LIMPIAR -->
+                    <!-- ================================================= -->
+
+                    <Button Grid.Column="4"
+                            Content="🧹 Limpiar"
+                            Height="32"
+                            Width="100"
+                            VerticalAlignment="Bottom"
+                            Click="BtnLimpiarFiltros_Click"
+                            Style="{StaticResource AccionButtonStyle}"/>
 
                 </Grid>
 
@@ -259,25 +241,12 @@
 
 
                     <!-- ================================================= -->
-                    <!-- ID -->
+                    <!-- CLIENTE -->
                     <!-- ================================================= -->
 
-                    <DataGridTextColumn Header="ID"
-                                        Binding="{Binding IdMoto}"
-                                        Width="50">
-
-                        <DataGridTextColumn.ElementStyle>
-
-                            <Style TargetType="TextBlock">
-
-                                <Setter Property="HorizontalAlignment"
-                                        Value="Center"/>
-
-                            </Style>
-
-                        </DataGridTextColumn.ElementStyle>
-
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Cliente"
+                                        Binding="{Binding NombreCliente}"
+                                        Width="1.5*"/>
 
 
                     <!-- ================================================= -->
@@ -286,7 +255,7 @@
 
                     <DataGridTextColumn Header="Marca"
                                         Binding="{Binding Marca}"
-                                        Width="*"/>
+                                        Width="1.1*"/>
 
 
                     <!-- ================================================= -->
@@ -295,78 +264,7 @@
 
                     <DataGridTextColumn Header="Modelo"
                                         Binding="{Binding Modelo}"
-                                        Width="*"/>
-
-
-                    <!-- ================================================= -->
-                    <!-- AÑO -->
-                    <!-- ================================================= -->
-
-                    <DataGridTextColumn Header="Año"
-                                        Binding="{Binding Anio}"
-                                        Width="60">
-
-                        <DataGridTextColumn.ElementStyle>
-
-                            <Style TargetType="TextBlock">
-
-                                <Setter Property="HorizontalAlignment"
-                                        Value="Center"/>
-
-                            </Style>
-
-                        </DataGridTextColumn.ElementStyle>
-
-                    </DataGridTextColumn>
-
-
-                    <!-- ================================================= -->
-                    <!-- PATENTE -->
-                    <!-- ================================================= -->
-
-                    <DataGridTextColumn Header="Patente"
-                                        Binding="{Binding Patente}"
-                                        Width="90">
-
-                        <DataGridTextColumn.ElementStyle>
-
-                            <Style TargetType="TextBlock">
-
-                                <Setter Property="HorizontalAlignment"
-                                        Value="Center"/>
-
-                            </Style>
-
-                        </DataGridTextColumn.ElementStyle>
-
-                    </DataGridTextColumn>
-
-
-                    <!-- ================================================= -->
-                    <!-- MOTOR -->
-                    <!-- ================================================= -->
-
-                    <DataGridTextColumn Header="Motor"
-                                        Binding="{Binding NroMotor}"
                                         Width="1.2*"/>
-
-
-                    <!-- ================================================= -->
-                    <!-- CHASIS -->
-                    <!-- ================================================= -->
-
-                    <DataGridTextColumn Header="Chasis"
-                                        Binding="{Binding NroChasis}"
-                                        Width="1.5*"/>
-
-
-                    <!-- ================================================= -->
-                    <!-- OBSERVACIONES -->
-                    <!-- ================================================= -->
-
-                    <DataGridTextColumn Header="Observaciones"
-                                        Binding="{Binding Observaciones}"
-                                        Width="2*"/>
 
 
                     <!-- ================================================= -->
@@ -375,7 +273,7 @@
 
                     <DataGridTextColumn Header="Fecha Alta"
                                         Binding="{Binding FechaAlta, StringFormat={}{0:dd/MM/yyyy}}"
-                                        Width="100">
+                                        Width="110">
 
                         <DataGridTextColumn.ElementStyle>
 
@@ -392,32 +290,37 @@
 
 
                     <!-- ================================================= -->
-                    <!-- ACCIONES -->
+                    <!-- OBSERVACIONES -->
                     <!-- ================================================= -->
 
-                    <DataGridTemplateColumn Header="Acciones"
-                                            Width="170">
+                    <DataGridTextColumn Header="Observaciones"
+                                        Binding="{Binding Observaciones}"
+                                        Width="2.2*"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- EDITAR -->
+                    <!-- ================================================= -->
+
+                    <DataGridTemplateColumn Header="Editar"
+                                            Width="110">
 
                         <DataGridTemplateColumn.CellTemplate>
 
                             <DataTemplate>
 
-                                <StackPanel Orientation="Horizontal"
-                                            HorizontalAlignment="Center">
-
-                                    <Button Content="✏️ Editar"
-                                            Click="BtnEditar_Click"
-                                            Margin="2"
-                                            Tag="{Binding IdMoto}"
-                                            Style="{StaticResource AccionButtonStyle}"/>
-
-                                </StackPanel>
+                                <Button Content="✏️ Editar"
+                                        Click="BtnEditar_Click"
+                                        Margin="2"
+                                        Tag="{Binding IdMoto}"
+                                        Style="{StaticResource AccionButtonStyle}"/>
 
                             </DataTemplate>
 
                         </DataGridTemplateColumn.CellTemplate>
 
                     </DataGridTemplateColumn>
+
 
                 </DataGrid.Columns>
 

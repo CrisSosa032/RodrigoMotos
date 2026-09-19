@@ -273,11 +273,7 @@
 
                 <DataGrid.Columns>
 
-                    <DataGridTextColumn Header="ID Cliente"
-                                        Binding="{Binding IdCliente}"
-                                        Width="80"/>
-
-
+                    
                     <DataGridTextColumn Header="Nombre"
                                         Binding="{Binding Nombre}"
                                         Width="*"/>
@@ -406,39 +402,39 @@
 
                                     <!-- EDITAR -->
                                     <Button Content="✏️"
-                        Click="BtnEditar_Click"
-                        Tag="{Binding IdCliente}"
-                        Width="42"
-                        Height="24"
-                        Margin="2"
-                        Padding="0"
-                        ToolTip="Editar cliente"
-                        Style="{StaticResource AccionButtonStyle}"/>
+                                        Click="BtnEditar_Click"
+                                        Tag="{Binding IdCliente}"
+                                        Width="42"
+                                        Height="24"
+                                        Margin="2"
+                                        Padding="0"
+                                        ToolTip="Editar cliente"
+                                        Style="{StaticResource AccionButtonStyle}"/>
 
                                     <!-- DESACTIVAR -->
                                     <Button Content="🗑️"
-                        Click="BtnEliminar_Click"
-                        Tag="{Binding IdCliente}"
-                        Width="42"
-                        Height="24"
-                        Margin="2"
-                        Padding="0"
-                        ToolTip="Desactivar cliente">
+                                        Click="BtnEliminar_Click"
+                                        Tag="{Binding IdCliente}"
+                                        Width="42"
+                                        Height="24"
+                                        Margin="2"
+                                        Padding="0"
+                                        ToolTip="Desactivar cliente">
 
                                         <Button.Style>
                                             <Style TargetType="Button"
-                               BasedOn="{StaticResource PeligroButtonStyle}">
+                                            BasedOn="{StaticResource PeligroButtonStyle}">
 
                                                 <Setter Property="Visibility"
-                                    Value="Visible"/>
+                                                    Value="Visible"/>
 
                                                 <Style.Triggers>
 
                                                     <DataTrigger Binding="{Binding Activo}"
-                                             Value="False">
+                                                        Value="False">
 
                                                         <Setter Property="Visibility"
-                                            Value="Collapsed"/>
+                                                        Value="Collapsed"/>
 
                                                     </DataTrigger>
 
@@ -451,28 +447,28 @@
 
                                     <!-- ACTIVAR -->
                                     <Button Content="🔄"
-                        Click="BtnActivar_Click"
-                        Tag="{Binding IdCliente}"
-                        Width="42"
-                        Height="24"
-                        Margin="2"
-                        Padding="0"
-                        ToolTip="Activar cliente">
+                                        Click="BtnActivar_Click"
+                                        Tag="{Binding IdCliente}"
+                                        Width="42"
+                                        Height="24"
+                                        Margin="2"
+                                        Padding="0"
+                                        ToolTip="Activar cliente">
 
                                         <Button.Style>
                                             <Style TargetType="Button"
-                               BasedOn="{StaticResource ExitoButtonStyle}">
+                                                BasedOn="{StaticResource ExitoButtonStyle}">
 
                                                 <Setter Property="Visibility"
-                                    Value="Collapsed"/>
+                                                Value="Collapsed"/>
 
                                                 <Style.Triggers>
 
                                                     <DataTrigger Binding="{Binding Activo}"
-                                             Value="False">
+                                                        Value="False">
 
                                                         <Setter Property="Visibility"
-                                            Value="Visible"/>
+                                                        Value="Visible"/>
 
                                                     </DataTrigger>
 
