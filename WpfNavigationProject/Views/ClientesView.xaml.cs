@@ -14,8 +14,24 @@ namespace WpfNavigationProject.Views
     public partial class ClientesView : UserControl
     {
         private readonly ClienteRepository _clienteRepository =
-            new ClienteRepository();
+        new ClienteRepository();
 
+    // =========================================================
+    // PAGINADO
+    // =========================================================
+
+    private int _paginaActual = 1;
+
+        private const int ClientesPorPagina = 20;
+
+        private int _totalClientes = 0;
+
+        private int _totalPaginas = 1;
+
+
+        // =========================================================
+        // CONSTRUCTOR
+        // =========================================================
 
         public ClientesView()
         {
@@ -26,49 +42,23 @@ namespace WpfNavigationProject.Views
 
 
         // =========================================================
-        // CARGA INICIAL
+        // CARGA DE CLIENTES
         // =========================================================
 
         /// <summary>
-        /// Carga los clientes activos al abrir la vista.
+        /// Carga los clientes aplicando los filtros actuales
+        /// y respetando el paginado.
         /// </summary>
         public void CargarDatosClientes()
         {
-            try
-            {
-                List<Cliente> clientes =
-                    _clienteRepository.GetAllClientes();
-
-                ClientesDataGrid.ItemsSource = clientes;
-            }
-            catch (System.Configuration.ConfigurationErrorsException ex)
-            {
-                MessageBox.Show(
-                    $"Error de configuración: Revisa tu App.config.\n\n{ex.Message}",
-                    "Error de Configuración");
-            }
-            catch (SqlException ex)
-            {
-                MessageBox.Show(
-                    $"Error de base de datos: Asegúrate de que SQL Server esté corriendo.\n\n{ex.Message}",
-                    "Error SQL");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Ocurrió un error inesperado:\n\n{ex.Message}",
-                    "Error General");
-            }
+            AplicarFiltros();
         }
 
 
         // =========================================================
-        // BUSCADOR
+        // OBTENER FILTROS ACTUALES
         // =========================================================
 
-        /// <summary>
-        /// Ejecuta la búsqueda utilizando todos los filtros actuales.
-        /// </summary>
         private void AplicarFiltros()
         {
             try
@@ -136,16 +126,21 @@ namespace WpfNavigationProject.Views
                     ClientesDataGrid.ItemsSource =
                         new List<Cliente>();
 
+                    _totalClientes = 0;
+                    _totalPaginas = 1;
+
+                    ActualizarControlesPaginado();
+
                     return;
                 }
 
 
                 // ---------------------------------------------
-                // CONSULTA
+                // OBTENER TOTAL
                 // ---------------------------------------------
 
-                List<Cliente> clientes =
-                    _clienteRepository.GetClientesFiltrados(
+                _totalClientes =
+                    _clienteRepository.GetTotalClientesFiltrados(
                         texto,
                         buscarPor,
                         activo,
@@ -153,7 +148,57 @@ namespace WpfNavigationProject.Views
                         fechaHasta);
 
 
-                ClientesDataGrid.ItemsSource = clientes;
+                // ---------------------------------------------
+                // CALCULAR TOTAL DE PÁGINAS
+                // ---------------------------------------------
+
+                _totalPaginas =
+                    _totalClientes == 0
+                        ? 1
+                        : (int)Math.Ceiling(
+                            (double)_totalClientes /
+                            ClientesPorPagina);
+
+
+                // ---------------------------------------------
+                // CORREGIR PÁGINA SI ES NECESARIO
+                // ---------------------------------------------
+
+                if (_paginaActual > _totalPaginas)
+                {
+                    _paginaActual = _totalPaginas;
+                }
+
+                if (_paginaActual < 1)
+                {
+                    _paginaActual = 1;
+                }
+
+
+                // ---------------------------------------------
+                // OBTENER CLIENTES DE LA PÁGINA
+                // ---------------------------------------------
+
+                List<Cliente> clientes =
+                    _clienteRepository.GetClientesFiltradosPaginados(
+                        texto,
+                        buscarPor,
+                        activo,
+                        fechaDesde,
+                        fechaHasta,
+                        _paginaActual,
+                        ClientesPorPagina);
+
+
+                ClientesDataGrid.ItemsSource =
+                    clientes;
+
+
+                // ---------------------------------------------
+                // ACTUALIZAR CONTROLES
+                // ---------------------------------------------
+
+                ActualizarControlesPaginado();
             }
             catch (SqlException ex)
             {
@@ -175,6 +220,56 @@ namespace WpfNavigationProject.Views
 
 
         // =========================================================
+        // ACTUALIZAR PAGINADO
+        // =========================================================
+
+        private void ActualizarControlesPaginado()
+        {
+            TxtPaginaActual.Text =
+                $"Página {_paginaActual} de {_totalPaginas}";
+
+            BtnPaginaAnterior.IsEnabled =
+                _paginaActual > 1;
+
+            BtnPaginaSiguiente.IsEnabled =
+                _paginaActual < _totalPaginas;
+        }
+
+
+        // =========================================================
+        // CAMBIAR DE PÁGINA
+        // =========================================================
+
+        private void BtnPaginaAnterior_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (_paginaActual > 1)
+            {
+                _paginaActual--;
+
+                AplicarFiltros();
+            }
+        }
+
+
+        private void BtnPaginaSiguiente_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (_paginaActual < _totalPaginas)
+            {
+                _paginaActual++;
+
+                AplicarFiltros();
+            }
+        }
+
+
+        
+
+
+        // =========================================================
         // EVENTOS DEL BUSCADOR
         // =========================================================
 
@@ -182,6 +277,11 @@ namespace WpfNavigationProject.Views
             object sender,
             TextChangedEventArgs e)
         {
+            if (!IsInitialized)
+                return;
+
+            _paginaActual = 1;
+
             AplicarFiltros();
         }
 
@@ -190,10 +290,12 @@ namespace WpfNavigationProject.Views
             object sender,
             SelectionChangedEventArgs e)
         {
-            if (IsInitialized)
-            {
-                AplicarFiltros();
-            }
+            if (!IsInitialized)
+                return;
+
+            _paginaActual = 1;
+
+            AplicarFiltros();
         }
 
 
@@ -201,10 +303,12 @@ namespace WpfNavigationProject.Views
             object sender,
             RoutedEventArgs e)
         {
-            if (IsInitialized)
-            {
-                AplicarFiltros();
-            }
+            if (!IsInitialized)
+                return;
+
+            _paginaActual = 1;
+
+            AplicarFiltros();
         }
 
 
@@ -212,10 +316,12 @@ namespace WpfNavigationProject.Views
             object sender,
             SelectionChangedEventArgs e)
         {
-            if (IsInitialized)
-            {
-                AplicarFiltros();
-            }
+            if (!IsInitialized)
+                return;
+
+            _paginaActual = 1;
+
+            AplicarFiltros();
         }
 
 
@@ -234,7 +340,10 @@ namespace WpfNavigationProject.Views
             RbActivos.IsChecked = true;
 
             DpFechaDesde.SelectedDate = null;
+
             DpFechaHasta.SelectedDate = null;
+
+            _paginaActual = 1;
 
             CargarDatosClientes();
         }
@@ -381,4 +490,5 @@ namespace WpfNavigationProject.Views
             }
         }
     }
+
 }

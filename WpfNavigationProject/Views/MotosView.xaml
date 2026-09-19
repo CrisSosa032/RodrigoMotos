@@ -40,6 +40,9 @@
                 <!-- Tabla -->
                 <RowDefinition Height="*"/>
 
+                <!-- Paginación -->
+                <RowDefinition Height="Auto"/>
+
                 <!-- Botón -->
                 <RowDefinition Height="Auto"/>
 
@@ -129,7 +132,6 @@
                                   SelectedIndex="0"
                                   SelectionChanged="Filtro_Changed">
 
-                            <!-- Primero Cliente -->
                             <ComboBoxItem Content="Cliente"/>
 
                             <ComboBoxItem Content="Marca"/>
@@ -328,10 +330,46 @@
 
 
             <!-- ===================================================== -->
+            <!-- PAGINACIÓN -->
+            <!-- ===================================================== -->
+
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="0,15,0,0">
+
+                <Button x:Name="BtnPaginaAnterior"
+                        Content="◀ Anterior"
+                        Width="100"
+                        Height="32"
+                        Margin="0,0,10,0"
+                        Click="BtnPaginaAnterior_Click"
+                        Style="{StaticResource AccionButtonStyle}"/>
+
+                <TextBlock x:Name="TxtPaginaActual"
+                           Text="Página 1 de 1"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Foreground="#444444"
+                           Margin="5,0"/>
+
+                <Button x:Name="BtnPaginaSiguiente"
+                        Content="Siguiente ▶"
+                        Width="100"
+                        Height="32"
+                        Margin="10,0,0,0"
+                        Click="BtnPaginaSiguiente_Click"
+                        Style="{StaticResource AccionButtonStyle}"/>
+
+            </StackPanel>
+
+
+            <!-- ===================================================== -->
             <!-- NUEVA MOTO -->
             <!-- ===================================================== -->
 
-            <Button Grid.Row="3"
+            <Button Grid.Row="4"
                     Content="+ Nueva Moto"
                     Name="BtnNuevaMoto"
                     Click="BtnNuevaMoto_Click"

@@ -27,59 +27,57 @@ namespace WpfNavigationProject.DataAccess
                     FechaBaja
                 FROM Clientes
                 WHERE Activo = 1
-                ORDER BY Nombre";
+                ORDER BY Nombre, IdCliente";
 
             using (SqlConnection connection = DbHelper.CreateConnection())
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                using (SqlCommand command = new SqlCommand(sql, connection))
+                try
                 {
-                    try
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        connection.Open();
-
-                        using (SqlDataReader reader = command.ExecuteReader())
+                        while (reader.Read())
                         {
-                            while (reader.Read())
+                            clientes.Add(new Cliente
                             {
-                                clientes.Add(new Cliente
-                                {
-                                    IdCliente = Convert.ToInt32(
-                                        reader["IdCliente"]),
+                                IdCliente = Convert.ToInt32(
+                                    reader["IdCliente"]),
 
-                                    Nombre = reader["Nombre"].ToString()
-                                        ?? string.Empty,
+                                Nombre = reader["Nombre"].ToString()
+                                    ?? string.Empty,
 
-                                    DNI = reader["DNI"].ToString()
-                                        ?? string.Empty,
+                                DNI = reader["DNI"].ToString()
+                                    ?? string.Empty,
 
-                                    Direccion = reader["Direccion"].ToString()
-                                        ?? string.Empty,
+                                Direccion = reader["Direccion"].ToString()
+                                    ?? string.Empty,
 
-                                    Telefono = reader["Telefono"].ToString()
-                                        ?? string.Empty,
+                                Telefono = reader["Telefono"].ToString()
+                                    ?? string.Empty,
 
-                                    Activo = reader["Activo"] != DBNull.Value
-                                        && Convert.ToBoolean(
-                                            reader["Activo"]),
+                                Activo = reader["Activo"] != DBNull.Value
+                                    && Convert.ToBoolean(
+                                        reader["Activo"]),
 
-                                    FechaIngreso = Convert.ToDateTime(
-                                        reader["FechaIngreso"]),
+                                FechaIngreso = Convert.ToDateTime(
+                                    reader["FechaIngreso"]),
 
-                                    FechaBaja = reader["FechaBaja"] != DBNull.Value
-                                        ? Convert.ToDateTime(
-                                            reader["FechaBaja"])
-                                        : null
-                                });
-                            }
+                                FechaBaja = reader["FechaBaja"] != DBNull.Value
+                                    ? Convert.ToDateTime(
+                                        reader["FechaBaja"])
+                                    : null
+                            });
                         }
                     }
-                    catch (SqlException ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine(
-                            "Error SQL: " + ex.Message);
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL: " + ex.Message);
 
-                        throw;
-                    }
+                    throw;
                 }
             }
 
@@ -88,30 +86,32 @@ namespace WpfNavigationProject.DataAccess
 
 
         // --------------------------------------------------------
-        // BUSCADOR Y FILTROS
+        // OBTENER CLIENTES FILTRADOS Y PAGINADOS
         // --------------------------------------------------------
 
         /// <summary>
-        /// Obtiene clientes aplicando los filtros del buscador.
-        /// 
-        /// activo:
-        /// true  = solamente activos
-        /// false = solamente inactivos
-        /// null  = todos
-        /// 
-        /// buscarPor:
-        /// "Nombre" o "DNI"
-        /// 
-        /// fechaDesde y fechaHasta filtran FechaIngreso.
+        /// Obtiene clientes aplicando los filtros actuales
+        /// y devuelve solamente la página solicitada.
         /// </summary>
-        public List<Cliente> GetClientesFiltrados(
+        public List<Cliente> GetClientesFiltradosPaginados(
             string texto,
             string buscarPor,
             bool? activo,
             DateTime? fechaDesde,
-            DateTime? fechaHasta)
+            DateTime? fechaHasta,
+            int pagina,
+            int clientesPorPagina)
         {
             List<Cliente> clientes = new List<Cliente>();
+
+            // Evitamos valores inválidos.
+            if (pagina < 1)
+                pagina = 1;
+
+            if (clientesPorPagina < 1)
+                clientesPorPagina = 15;
+
+            int offset = (pagina - 1) * clientesPorPagina;
 
             string sql = @"
                 SELECT 
@@ -153,7 +153,9 @@ namespace WpfNavigationProject.DataAccess
                         @FechaHasta IS NULL
                         OR FechaIngreso <= @FechaHasta
                     )
-                ORDER BY Nombre";
+                ORDER BY Nombre, IdCliente
+                OFFSET @Offset ROWS
+                FETCH NEXT @ClientesPorPagina ROWS ONLY;";
 
             using (SqlConnection connection = DbHelper.CreateConnection())
             using (SqlCommand command = new SqlCommand(sql, connection))
@@ -164,10 +166,12 @@ namespace WpfNavigationProject.DataAccess
 
                 command.Parameters.AddWithValue(
                     "@BuscarPor",
-                    buscarPor);
+                    buscarPor ?? "Nombre");
 
                 command.Parameters.Add(
-                    new SqlParameter("@Activo", System.Data.SqlDbType.Bit)
+                    new SqlParameter(
+                        "@Activo",
+                        System.Data.SqlDbType.Bit)
                     {
                         Value = activo.HasValue
                             ? (object)activo.Value
@@ -175,7 +179,9 @@ namespace WpfNavigationProject.DataAccess
                     });
 
                 command.Parameters.Add(
-                    new SqlParameter("@FechaDesde", System.Data.SqlDbType.Date)
+                    new SqlParameter(
+                        "@FechaDesde",
+                        System.Data.SqlDbType.Date)
                     {
                         Value = fechaDesde.HasValue
                             ? (object)fechaDesde.Value.Date
@@ -183,53 +189,194 @@ namespace WpfNavigationProject.DataAccess
                     });
 
                 command.Parameters.Add(
-                    new SqlParameter("@FechaHasta", System.Data.SqlDbType.Date)
+                    new SqlParameter(
+                        "@FechaHasta",
+                        System.Data.SqlDbType.Date)
                     {
                         Value = fechaHasta.HasValue
                             ? (object)fechaHasta.Value.Date
                             : DBNull.Value
                     });
 
-                connection.Open();
-
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@Offset",
+                        System.Data.SqlDbType.Int)
                     {
-                        clientes.Add(new Cliente
+                        Value = offset
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@ClientesPorPagina",
+                        System.Data.SqlDbType.Int)
+                    {
+                        Value = clientesPorPagina
+                    });
+
+                try
+                {
+                    connection.Open();
+
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
+                    {
+                        while (reader.Read())
                         {
-                            IdCliente = Convert.ToInt32(
-                                reader["IdCliente"]),
+                            clientes.Add(new Cliente
+                            {
+                                IdCliente = Convert.ToInt32(
+                                    reader["IdCliente"]),
 
-                            Nombre = reader["Nombre"].ToString()
-                                ?? string.Empty,
+                                Nombre = reader["Nombre"].ToString()
+                                    ?? string.Empty,
 
-                            DNI = reader["DNI"].ToString()
-                                ?? string.Empty,
+                                DNI = reader["DNI"].ToString()
+                                    ?? string.Empty,
 
-                            Direccion = reader["Direccion"].ToString()
-                                ?? string.Empty,
+                                Direccion = reader["Direccion"].ToString()
+                                    ?? string.Empty,
 
-                            Telefono = reader["Telefono"].ToString()
-                                ?? string.Empty,
+                                Telefono = reader["Telefono"].ToString()
+                                    ?? string.Empty,
 
-                            Activo = reader["Activo"] != DBNull.Value
-                                && Convert.ToBoolean(
-                                    reader["Activo"]),
+                                Activo = reader["Activo"] != DBNull.Value
+                                    && Convert.ToBoolean(
+                                        reader["Activo"]),
 
-                            FechaIngreso = Convert.ToDateTime(
-                                reader["FechaIngreso"]),
+                                FechaIngreso = Convert.ToDateTime(
+                                    reader["FechaIngreso"]),
 
-                            FechaBaja = reader["FechaBaja"] != DBNull.Value
-                                ? Convert.ToDateTime(
-                                    reader["FechaBaja"])
-                                : null
-                        });
+                                FechaBaja = reader["FechaBaja"] != DBNull.Value
+                                    ? Convert.ToDateTime(
+                                        reader["FechaBaja"])
+                                    : null
+                            });
+                        }
                     }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener clientes paginados: "
+                        + ex.Message);
+
+                    throw;
                 }
             }
 
             return clientes;
+        }
+
+
+        // --------------------------------------------------------
+        // OBTENER TOTAL DE CLIENTES FILTRADOS
+        // --------------------------------------------------------
+
+        /// <summary>
+        /// Obtiene la cantidad total de clientes que coinciden
+        /// con los filtros actuales.
+        /// </summary>
+        public int GetTotalClientesFiltrados(
+            string texto,
+            string buscarPor,
+            bool? activo,
+            DateTime? fechaDesde,
+            DateTime? fechaHasta)
+        {
+            string sql = @"
+                SELECT COUNT(*)
+                FROM Clientes
+                WHERE
+                    (
+                        @Texto = ''
+                        OR
+                        (
+                            @BuscarPor = 'Nombre'
+                            AND Nombre LIKE '%' + @Texto + '%'
+                        )
+                        OR
+                        (
+                            @BuscarPor = 'DNI'
+                            AND DNI LIKE '%' + @Texto + '%'
+                        )
+                    )
+                    AND
+                    (
+                        @Activo IS NULL
+                        OR Activo = @Activo
+                    )
+                    AND
+                    (
+                        @FechaDesde IS NULL
+                        OR FechaIngreso >= @FechaDesde
+                    )
+                    AND
+                    (
+                        @FechaHasta IS NULL
+                        OR FechaIngreso <= @FechaHasta
+                    );";
+
+            using (SqlConnection connection = DbHelper.CreateConnection())
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue(
+                    "@Texto",
+                    texto ?? string.Empty);
+
+                command.Parameters.AddWithValue(
+                    "@BuscarPor",
+                    buscarPor ?? "Nombre");
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@Activo",
+                        System.Data.SqlDbType.Bit)
+                    {
+                        Value = activo.HasValue
+                            ? (object)activo.Value
+                            : DBNull.Value
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@FechaDesde",
+                        System.Data.SqlDbType.Date)
+                    {
+                        Value = fechaDesde.HasValue
+                            ? (object)fechaDesde.Value.Date
+                            : DBNull.Value
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@FechaHasta",
+                        System.Data.SqlDbType.Date)
+                    {
+                        Value = fechaHasta.HasValue
+                            ? (object)fechaHasta.Value.Date
+                            : DBNull.Value
+                    });
+
+                try
+                {
+                    connection.Open();
+
+                    object result = command.ExecuteScalar();
+
+                    return result != null
+                        ? Convert.ToInt32(result)
+                        : 0;
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al contar clientes filtrados: "
+                        + ex.Message);
+
+                    throw;
+                }
+            }
         }
 
 
@@ -461,7 +608,7 @@ namespace WpfNavigationProject.DataAccess
                     FechaBaja
                 FROM Clientes
                 WHERE Activo = 0
-                ORDER BY Nombre";
+                ORDER BY Nombre, IdCliente";
 
             using (SqlConnection connection = DbHelper.CreateConnection())
             using (SqlCommand command = new SqlCommand(sql, connection))
@@ -471,7 +618,7 @@ namespace WpfNavigationProject.DataAccess
                     connection.Open();
 
                     using (SqlDataReader reader =
-                        command.ExecuteReader())
+                           command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -547,7 +694,6 @@ namespace WpfNavigationProject.DataAccess
         }
 
 
-
         // --------------------------------------------------------
         // DESACTIVACIÓN AUTOMÁTICA DE CLIENTES INACTIVOS
         // --------------------------------------------------------
@@ -555,21 +701,22 @@ namespace WpfNavigationProject.DataAccess
         public void DesactivarClientesInactivos()
         {
             string sql = @"
-                        UPDATE Clientes
-                        SET
-                            Activo = 0,
-                            FechaBaja = CAST(GETDATE() AS DATE)
-                        WHERE
-                            Activo = 1
-                            AND IdCliente IN
-                            (
-                                SELECT m.IdCliente
-                                FROM Motos m
-                                INNER JOIN Servicios s
-                                    ON s.IdMoto = m.IdMoto
-                                GROUP BY m.IdCliente
-                                HAVING MAX(s.FechaEntrada) < DATEADD(MONTH, -3, GETDATE())
-                            );";
+                UPDATE Clientes
+                SET
+                    Activo = 0,
+                    FechaBaja = CAST(GETDATE() AS DATE)
+                WHERE
+                    Activo = 1
+                    AND IdCliente IN
+                    (
+                        SELECT m.IdCliente
+                        FROM Motos m
+                        INNER JOIN Servicios s
+                            ON s.IdMoto = m.IdMoto
+                        GROUP BY m.IdCliente
+                        HAVING MAX(s.FechaEntrada) <
+                               DATEADD(MONTH, -3, GETDATE())
+                    );";
 
             using (SqlConnection connection = DbHelper.CreateConnection())
             using (SqlCommand command = new SqlCommand(sql, connection))

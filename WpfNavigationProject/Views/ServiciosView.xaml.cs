@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Data.SqlClient;
@@ -15,9 +14,23 @@ namespace WpfNavigationProject.Views
     public partial class ServiciosView : UserControl
     {
         private readonly ServiciosRepository _serviciosRepository =
-            new ServiciosRepository();
+        new ServiciosRepository();
+
+    // ============================================================
+    // PAGINACIÓN
+    // ============================================================
+
+    private const int ServiciosPorPagina = 20;
+
+        private int _paginaActual = 1;
+        private int _totalServicios = 0;
+        private int _totalPaginas = 1;
 
         private bool _vistaInicializada = false;
+
+        // ============================================================
+        // CONSTRUCTOR
+        // ============================================================
 
         public ServiciosView()
         {
@@ -41,47 +54,18 @@ namespace WpfNavigationProject.Views
         }
 
         // ============================================================
-        // CARGAR TODOS LOS SERVICIOS
+        // CARGAR DATOS
         // ============================================================
 
         public void CargarDatosServicios()
         {
-            try
-            {
-                List<Servicios> servicios =
-                    _serviciosRepository.GetAllServicios();
+            _paginaActual = 1;
 
-                ServiciosDataGrid.ItemsSource = servicios;
-            }
-            catch (System.Configuration.ConfigurationErrorsException ex)
-            {
-                MessageBox.Show(
-                    $"Error de configuración: Revisa tu App.config.\n\n{ex.Message}",
-                    "Error de Configuración",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-            catch (SqlException ex)
-            {
-                MessageBox.Show(
-                    $"Error de base de datos: Asegúrate de que SQL Server esté corriendo.\n\n{ex.Message}",
-                    "Error SQL",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Error:\n\n{ex.Message}\n\n" +
-                    $"Origen:\n{ex.StackTrace}",
-                    "Error General",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
+            AplicarFiltros();
         }
 
         // ============================================================
-        // APLICAR FILTROS
+        // APLICAR FILTROS Y PAGINACIÓN
         // ============================================================
 
         private void AplicarFiltros()
@@ -91,8 +75,16 @@ namespace WpfNavigationProject.Views
 
             try
             {
+                // ----------------------------------------------------
+                // TEXTO DE BÚSQUEDA
+                // ----------------------------------------------------
+
                 string texto =
                     TxtBuscar.Text.Trim();
+
+                // ----------------------------------------------------
+                // CAMPO DE BÚSQUEDA
+                // ----------------------------------------------------
 
                 string buscarPor = "Nombre";
 
@@ -103,6 +95,10 @@ namespace WpfNavigationProject.Views
                     buscarPor =
                         item.Tag.ToString() ?? "Nombre";
                 }
+
+                // ----------------------------------------------------
+                // ESTADO
+                // ----------------------------------------------------
 
                 int? idEstado = null;
 
@@ -123,6 +119,10 @@ namespace WpfNavigationProject.Views
                     idEstado = 4;
                 }
 
+                // ----------------------------------------------------
+                // FECHAS
+                // ----------------------------------------------------
+
                 DateTime? fechaDesde =
                     DpFechaDesde.SelectedDate;
 
@@ -138,26 +138,73 @@ namespace WpfNavigationProject.Views
                     fechaDesde.Value.Date >
                     fechaHasta.Value.Date)
                 {
+                    _totalServicios = 0;
+                    _totalPaginas = 1;
+                    _paginaActual = 1;
+
                     ServiciosDataGrid.ItemsSource =
                         new List<Servicios>();
+
+                    ActualizarControlesPaginado();
 
                     return;
                 }
 
                 // ----------------------------------------------------
-                // BUSCAR SERVICIOS FILTRADOS
+                // OBTENER TOTAL DE SERVICIOS
                 // ----------------------------------------------------
 
-                List<Servicios> servicios =
-                    _serviciosRepository.GetServiciosFiltrados(
+                _totalServicios =
+                    _serviciosRepository.GetTotalServiciosFiltrados(
                         texto,
                         buscarPor,
                         idEstado,
                         fechaDesde,
                         fechaHasta);
 
+                // ----------------------------------------------------
+                // CALCULAR TOTAL DE PÁGINAS
+                // ----------------------------------------------------
+
+                _totalPaginas =
+                    Math.Max(
+                        1,
+                        (int)Math.Ceiling(
+                            (double)_totalServicios /
+                            ServiciosPorPagina));
+
+                // ----------------------------------------------------
+                // ASEGURAR QUE LA PÁGINA ACTUAL SEA VÁLIDA
+                // ----------------------------------------------------
+
+                if (_paginaActual > _totalPaginas)
+                    _paginaActual = _totalPaginas;
+
+                if (_paginaActual < 1)
+                    _paginaActual = 1;
+
+                // ----------------------------------------------------
+                // OBTENER SERVICIOS DE LA PÁGINA ACTUAL
+                // ----------------------------------------------------
+
+                List<Servicios> servicios =
+                    _serviciosRepository.GetServiciosFiltradosPaginados(
+                        texto,
+                        buscarPor,
+                        idEstado,
+                        fechaDesde,
+                        fechaHasta,
+                        _paginaActual,
+                        ServiciosPorPagina);
+
                 ServiciosDataGrid.ItemsSource =
                     servicios;
+
+                // ----------------------------------------------------
+                // ACTUALIZAR CONTROLES DE PAGINACIÓN
+                // ----------------------------------------------------
+
+                ActualizarControlesPaginado();
             }
             catch (System.Configuration.ConfigurationErrorsException ex)
             {
@@ -188,6 +235,22 @@ namespace WpfNavigationProject.Views
         }
 
         // ============================================================
+        // ACTUALIZAR CONTROLES DE PAGINACIÓN
+        // ============================================================
+
+        private void ActualizarControlesPaginado()
+        {
+            TxtPaginaActual.Text =
+                $"Página {_paginaActual} de {_totalPaginas}";
+
+            BtnPaginaAnterior.IsEnabled =
+                _paginaActual > 1;
+
+            BtnPaginaSiguiente.IsEnabled =
+                _paginaActual < _totalPaginas;
+        }
+
+        // ============================================================
         // EVENTOS DE FILTROS
         // ============================================================
 
@@ -195,6 +258,8 @@ namespace WpfNavigationProject.Views
             object sender,
             TextChangedEventArgs e)
         {
+            _paginaActual = 1;
+
             AplicarFiltros();
         }
 
@@ -202,6 +267,8 @@ namespace WpfNavigationProject.Views
             object sender,
             SelectionChangedEventArgs e)
         {
+            _paginaActual = 1;
+
             AplicarFiltros();
         }
 
@@ -209,6 +276,8 @@ namespace WpfNavigationProject.Views
             object sender,
             RoutedEventArgs e)
         {
+            _paginaActual = 1;
+
             AplicarFiltros();
         }
 
@@ -216,6 +285,40 @@ namespace WpfNavigationProject.Views
             object sender,
             SelectionChangedEventArgs e)
         {
+            _paginaActual = 1;
+
+            AplicarFiltros();
+        }
+
+        // ============================================================
+        // PAGINACIÓN - ANTERIOR
+        // ============================================================
+
+        private void BtnPaginaAnterior_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (_paginaActual <= 1)
+                return;
+
+            _paginaActual--;
+
+            AplicarFiltros();
+        }
+
+        // ============================================================
+        // PAGINACIÓN - SIGUIENTE
+        // ============================================================
+
+        private void BtnPaginaSiguiente_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (_paginaActual >= _totalPaginas)
+                return;
+
+            _paginaActual++;
+
             AplicarFiltros();
         }
 
@@ -236,7 +339,9 @@ namespace WpfNavigationProject.Views
             DpFechaDesde.SelectedDate = null;
             DpFechaHasta.SelectedDate = null;
 
-            CargarDatosServicios();
+            _paginaActual = 1;
+
+            AplicarFiltros();
         }
 
         // ============================================================
@@ -286,4 +391,5 @@ namespace WpfNavigationProject.Views
             }
         }
     }
+
 }

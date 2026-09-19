@@ -70,74 +70,87 @@ namespace WpfNavigationProject.DataAccess
 
 
         // ============================================================
-        // OBTENER MOTOS FILTRADAS
+        // OBTENER MOTOS FILTRADAS Y PAGINADAS
         // ============================================================
 
-        public List<Moto> GetMotosFiltradas(
+        public List<Moto> GetMotosFiltradasPaginadas(
             string texto,
             string campoBusqueda,
             DateTime? fechaDesde,
-            DateTime? fechaHasta)
+            DateTime? fechaHasta,
+            int pagina,
+            int motosPorPagina)
         {
             List<Moto> motos = new List<Moto>();
 
+            if (pagina < 1)
+                pagina = 1;
+
+            if (motosPorPagina < 1)
+                motosPorPagina = 20;
+
+            int offset = (pagina - 1) * motosPorPagina;
+
             string sql = @"
-                SELECT
-                    m.IdMoto,
-                    m.IdCliente,
-                    c.Nombre AS NombreCliente,
-                    m.Marca,
-                    m.Modelo,
-                    m.Anio,
-                    m.Patente,
-                    m.NroMotor,
-                    m.NroChasis,
-                    m.Observaciones,
-                    m.FechaAlta
-                FROM Motos m
-                INNER JOIN Clientes c
-                    ON m.IdCliente = c.IdCliente
-                WHERE
-                    (
-                        @Texto = ''
-                        OR
-                        (
-                            @Campo = 'Marca'
-                            AND m.Marca LIKE '%' + @Texto + '%'
-                        )
-                        OR
-                        (
-                            @Campo = 'Modelo'
-                            AND m.Modelo LIKE '%' + @Texto + '%'
-                        )
-                        OR
-                        (
-                            @Campo = 'Patente'
-                            AND m.Patente LIKE '%' + @Texto + '%'
-                        )
-                        OR
-                        (
-                            @Campo = 'Cliente'
-                            AND c.Nombre LIKE '%' + @Texto + '%'
-                        )
-                    )
+        SELECT
+            m.IdMoto,
+            m.IdCliente,
+            c.Nombre AS NombreCliente,
+            m.Marca,
+            m.Modelo,
+            m.Anio,
+            m.Patente,
+            m.NroMotor,
+            m.NroChasis,
+            m.Observaciones,
+            m.FechaAlta
+        FROM Motos m
+        INNER JOIN Clientes c
+            ON m.IdCliente = c.IdCliente
+        WHERE
+            (
+                @Texto = ''
+                OR
+                (
+                    @Campo = 'Marca'
+                    AND m.Marca LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @Campo = 'Modelo'
+                    AND m.Modelo LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @Campo = 'Patente'
+                    AND m.Patente LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @Campo = 'Cliente'
+                    AND c.Nombre LIKE '%' + @Texto + '%'
+                )
+            )
 
-                    AND
-                    (
-                        @FechaDesde IS NULL
-                        OR m.FechaAlta >= @FechaDesde
-                    )
+            AND
+            (
+                @FechaDesde IS NULL
+                OR m.FechaAlta >= @FechaDesde
+            )
 
-                    AND
-                    (
-                        @FechaHasta IS NULL
-                        OR m.FechaAlta <= @FechaHasta
-                    )
+            AND
+            (
+                @FechaHasta IS NULL
+                OR m.FechaAlta <= @FechaHasta
+            )
 
-                ORDER BY
-                    m.Marca,
-                    m.Modelo,
-                    m.IdMoto";
+        ORDER BY
+            m.Marca,
+            m.Modelo,
+            m.IdMoto
+
+        OFFSET @Offset ROWS
+        FETCH NEXT @MotosPorPagina ROWS ONLY;";
 
             using (SqlConnection connection =
                    DbHelper.CreateConnection())
@@ -155,31 +168,29 @@ namespace WpfNavigationProject.DataAccess
                     SqlDbType.NVarChar)
                     .Value = campoBusqueda ?? "Marca";
 
-                // ----------------------------------------------------
-                // FECHA DESDE
-                // ----------------------------------------------------
-
                 command.Parameters.Add(
                     "@FechaDesde",
-                    SqlDbType.Date);
-
-                command.Parameters["@FechaDesde"].Value =
-                    fechaDesde.HasValue
+                    SqlDbType.Date)
+                    .Value = fechaDesde.HasValue
                         ? fechaDesde.Value.Date
                         : DBNull.Value;
 
-                // ----------------------------------------------------
-                // FECHA HASTA
-                // ----------------------------------------------------
-
                 command.Parameters.Add(
                     "@FechaHasta",
-                    SqlDbType.Date);
-
-                command.Parameters["@FechaHasta"].Value =
-                    fechaHasta.HasValue
+                    SqlDbType.Date)
+                    .Value = fechaHasta.HasValue
                         ? fechaHasta.Value.Date
                         : DBNull.Value;
+
+                command.Parameters.Add(
+                    "@Offset",
+                    SqlDbType.Int)
+                    .Value = offset;
+
+                command.Parameters.Add(
+                    "@MotosPorPagina",
+                    SqlDbType.Int)
+                    .Value = motosPorPagina;
 
                 try
                 {
@@ -197,7 +208,7 @@ namespace WpfNavigationProject.DataAccess
                 catch (SqlException ex)
                 {
                     System.Diagnostics.Debug.WriteLine(
-                        "Error SQL al obtener motos filtradas: "
+                        "Error SQL al obtener motos paginadas: "
                         + ex.Message);
 
                     throw;
@@ -205,6 +216,111 @@ namespace WpfNavigationProject.DataAccess
             }
 
             return motos;
+        }
+
+
+        // ============================================================
+        // CONTAR MOTOS FILTRADAS
+        // ============================================================
+
+        public int GetTotalMotosFiltradas(
+            string texto,
+            string campoBusqueda,
+            DateTime? fechaDesde,
+            DateTime? fechaHasta)
+        {
+            string sql = @"
+        SELECT COUNT(*)
+        FROM Motos m
+        INNER JOIN Clientes c
+            ON m.IdCliente = c.IdCliente
+        WHERE
+            (
+                @Texto = ''
+                OR
+                (
+                    @Campo = 'Marca'
+                    AND m.Marca LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @Campo = 'Modelo'
+                    AND m.Modelo LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @Campo = 'Patente'
+                    AND m.Patente LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @Campo = 'Cliente'
+                    AND c.Nombre LIKE '%' + @Texto + '%'
+                )
+            )
+
+            AND
+            (
+                @FechaDesde IS NULL
+                OR m.FechaAlta >= @FechaDesde
+            )
+
+            AND
+            (
+                @FechaHasta IS NULL
+                OR m.FechaAlta <= @FechaHasta
+            );";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add(
+                    "@Texto",
+                    SqlDbType.NVarChar)
+                    .Value = texto ?? string.Empty;
+
+                command.Parameters.Add(
+                    "@Campo",
+                    SqlDbType.NVarChar)
+                    .Value = campoBusqueda ?? "Marca";
+
+                command.Parameters.Add(
+                    "@FechaDesde",
+                    SqlDbType.Date)
+                    .Value = fechaDesde.HasValue
+                        ? fechaDesde.Value.Date
+                        : DBNull.Value;
+
+                command.Parameters.Add(
+                    "@FechaHasta",
+                    SqlDbType.Date)
+                    .Value = fechaHasta.HasValue
+                        ? fechaHasta.Value.Date
+                        : DBNull.Value;
+
+                try
+                {
+                    connection.Open();
+
+                    object resultado =
+                        command.ExecuteScalar();
+
+                    return resultado != null
+                        ? Convert.ToInt32(resultado)
+                        : 0;
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al contar motos filtradas: "
+                        + ex.Message);
+
+                    throw;
+                }
+            }
         }
 
 

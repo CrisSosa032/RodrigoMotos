@@ -133,130 +133,164 @@ namespace WpfNavigationProject.DataAccess
 
 
         // ============================================================
-        // OBTENER SERVICIOS FILTRADOS
+        // OBTENER SERVICIOS FILTRADOS Y PAGINADOS
         // ============================================================
 
-        public List<Servicios> GetServiciosFiltrados(
+        public List<Servicios> GetServiciosFiltradosPaginados(
             string texto,
             string buscarPor,
             int? idEstado,
             DateTime? fechaDesde,
-            DateTime? fechaHasta)
+            DateTime? fechaHasta,
+            int pagina,
+            int serviciosPorPagina)
         {
             List<Servicios> serviciosList =
                 new List<Servicios>();
 
+            if (pagina < 1)
+                pagina = 1;
+
+            if (serviciosPorPagina < 1)
+                serviciosPorPagina = 20;
+
+            int offset =
+                (pagina - 1) * serviciosPorPagina;
+
             string sql = @"
-                SELECT
-                    s.IdServicio,
-                    s.IdMoto,
-                    s.IdEstado,
-                    s.Detalle,
-                    s.FechaEntrada,
-                    s.CostoEstimado,
+        SELECT
+            s.IdServicio,
+            s.IdMoto,
+            s.IdEstado,
+            s.Detalle,
+            s.FechaEntrada,
+            s.CostoEstimado,
 
-                    c.Nombre AS NombreCliente,
+            c.Nombre AS NombreCliente,
 
-                    m.Marca AS MarcaMoto,
-                    m.Modelo AS ModeloMoto,
+            m.Marca AS MarcaMoto,
+            m.Modelo AS ModeloMoto,
 
-                    e.NombreEstado AS NombreEstado
+            e.NombreEstado AS NombreEstado
 
-                FROM Servicios s
+        FROM Servicios s
 
-                INNER JOIN Motos m
-                    ON s.IdMoto = m.IdMoto
+        INNER JOIN Motos m
+            ON s.IdMoto = m.IdMoto
 
-                INNER JOIN Clientes c
-                    ON m.IdCliente = c.IdCliente
+        INNER JOIN Clientes c
+            ON m.IdCliente = c.IdCliente
 
-                INNER JOIN EstadosServicio e
-                    ON s.IdEstado = e.IdEstado
+        INNER JOIN EstadosServicio e
+            ON s.IdEstado = e.IdEstado
 
-                WHERE
-                    (
-                        @Texto = ''
-                        OR
-                        (
-                            @BuscarPor = 'Nombre'
-                            AND c.Nombre LIKE '%' + @Texto + '%'
-                        )
-                        OR
-                        (
-                            @BuscarPor = 'Marca'
-                            AND m.Marca LIKE '%' + @Texto + '%'
-                        )
-                        OR
-                        (
-                            @BuscarPor = 'Modelo'
-                            AND m.Modelo LIKE '%' + @Texto + '%'
-                        )
-                    )
+        WHERE
+            (
+                @Texto = ''
+                OR
+                (
+                    @BuscarPor = 'Nombre'
+                    AND c.Nombre LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @BuscarPor = 'Marca'
+                    AND m.Marca LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @BuscarPor = 'Modelo'
+                    AND m.Modelo LIKE '%' + @Texto + '%'
+                )
+            )
 
-                    AND
-                    (
-                        @IdEstado IS NULL
-                        OR s.IdEstado = @IdEstado
-                    )
+            AND
+            (
+                @IdEstado IS NULL
+                OR s.IdEstado = @IdEstado
+            )
 
-                    AND
-                    (
-                        @FechaDesde IS NULL
-                        OR s.FechaEntrada >= @FechaDesde
-                    )
+            AND
+            (
+                @FechaDesde IS NULL
+                OR s.FechaEntrada >= @FechaDesde
+            )
 
-                    AND
-                    (
-                        @FechaHasta IS NULL
-                        OR s.FechaEntrada <= @FechaHasta
-                    )
+            AND
+            (
+                @FechaHasta IS NULL
+                OR s.FechaEntrada <= @FechaHasta
+            )
 
-                ORDER BY s.FechaEntrada DESC";
+        ORDER BY
+            s.FechaEntrada DESC,
+            s.IdServicio DESC
+
+        OFFSET @Offset ROWS
+        FETCH NEXT @ServiciosPorPagina ROWS ONLY;";
 
             using (SqlConnection connection =
                    DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
             {
-                using (SqlCommand command =
-                       new SqlCommand(sql, connection))
+                command.Parameters.AddWithValue(
+                    "@Texto",
+                    texto ?? string.Empty);
+
+                command.Parameters.AddWithValue(
+                    "@BuscarPor",
+                    buscarPor ?? "Nombre");
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@IdEstado",
+                        SqlDbType.Int)
+                    {
+                        Value = idEstado.HasValue
+                            ? (object)idEstado.Value
+                            : DBNull.Value
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@FechaDesde",
+                        SqlDbType.Date)
+                    {
+                        Value = fechaDesde.HasValue
+                            ? (object)fechaDesde.Value.Date
+                            : DBNull.Value
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@FechaHasta",
+                        SqlDbType.Date)
+                    {
+                        Value = fechaHasta.HasValue
+                            ? (object)fechaHasta.Value.Date
+                            : DBNull.Value
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@Offset",
+                        SqlDbType.Int)
+                    {
+                        Value = offset
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@ServiciosPorPagina",
+                        SqlDbType.Int)
+                    {
+                        Value = serviciosPorPagina
+                    });
+
+                try
                 {
-                    command.Parameters.AddWithValue(
-                        "@Texto",
-                        texto ?? string.Empty);
-
-                    command.Parameters.AddWithValue(
-                        "@BuscarPor",
-                        buscarPor ?? "Nombre");
-
-                    command.Parameters.Add(
-                        new SqlParameter(
-                            "@IdEstado",
-                            SqlDbType.Int)
-                        {
-                            Value = idEstado.HasValue
-                                ? (object)idEstado.Value
-                                : DBNull.Value
-                        });
-
-                    command.Parameters.Add(
-                        new SqlParameter(
-                            "@FechaDesde",
-                            SqlDbType.Date)
-                        {
-                            Value = fechaDesde.HasValue
-                                ? (object)fechaDesde.Value.Date
-                                : DBNull.Value
-                        });
-
-                    command.Parameters.Add(
-                        new SqlParameter(
-                            "@FechaHasta",
-                            SqlDbType.Date)
-                        {
-                            Value = fechaHasta.HasValue
-                                ? (object)fechaHasta.Value.Date
-                                : DBNull.Value
-                        });
-
                     connection.Open();
 
                     using (SqlDataReader reader =
@@ -321,9 +355,147 @@ namespace WpfNavigationProject.DataAccess
                         }
                     }
                 }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener servicios paginados: "
+                        + ex.Message);
+
+                    throw;
+                }
             }
 
             return serviciosList;
+        }
+
+
+        // ============================================================
+        // CONTAR SERVICIOS FILTRADOS
+        // ============================================================
+
+        public int GetTotalServiciosFiltrados(
+            string texto,
+            string buscarPor,
+            int? idEstado,
+            DateTime? fechaDesde,
+            DateTime? fechaHasta)
+        {
+            string sql = @"
+        SELECT COUNT(*)
+
+        FROM Servicios s
+
+        INNER JOIN Motos m
+            ON s.IdMoto = m.IdMoto
+
+        INNER JOIN Clientes c
+            ON m.IdCliente = c.IdCliente
+
+        INNER JOIN EstadosServicio e
+            ON s.IdEstado = e.IdEstado
+
+        WHERE
+            (
+                @Texto = ''
+                OR
+                (
+                    @BuscarPor = 'Nombre'
+                    AND c.Nombre LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @BuscarPor = 'Marca'
+                    AND m.Marca LIKE '%' + @Texto + '%'
+                )
+                OR
+                (
+                    @BuscarPor = 'Modelo'
+                    AND m.Modelo LIKE '%' + @Texto + '%'
+                )
+            )
+
+            AND
+            (
+                @IdEstado IS NULL
+                OR s.IdEstado = @IdEstado
+            )
+
+            AND
+            (
+                @FechaDesde IS NULL
+                OR s.FechaEntrada >= @FechaDesde
+            )
+
+            AND
+            (
+                @FechaHasta IS NULL
+                OR s.FechaEntrada <= @FechaHasta
+            );";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue(
+                    "@Texto",
+                    texto ?? string.Empty);
+
+                command.Parameters.AddWithValue(
+                    "@BuscarPor",
+                    buscarPor ?? "Nombre");
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@IdEstado",
+                        SqlDbType.Int)
+                    {
+                        Value = idEstado.HasValue
+                            ? (object)idEstado.Value
+                            : DBNull.Value
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@FechaDesde",
+                        SqlDbType.Date)
+                    {
+                        Value = fechaDesde.HasValue
+                            ? (object)fechaDesde.Value.Date
+                            : DBNull.Value
+                    });
+
+                command.Parameters.Add(
+                    new SqlParameter(
+                        "@FechaHasta",
+                        SqlDbType.Date)
+                    {
+                        Value = fechaHasta.HasValue
+                            ? (object)fechaHasta.Value.Date
+                            : DBNull.Value
+                    });
+
+                try
+                {
+                    connection.Open();
+
+                    object resultado =
+                        command.ExecuteScalar();
+
+                    return resultado != null
+                        ? Convert.ToInt32(resultado)
+                        : 0;
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al contar servicios filtrados: "
+                        + ex.Message);
+
+                    throw;
+                }
+            }
         }
 
 

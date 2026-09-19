@@ -56,11 +56,12 @@ namespace WpfNavigationProject.Views
         {
             List<Cliente> clientes = _clienteRepository.GetAllClientes();
             List<Moto> motos = _motoRepository.GetAllMotos();
-            List<Servicios> servicios = _serviciosRepository.GetAllServicios();
+            List<TrabajoEnCurso> trabajos =
+                _serviciosRepository.GetTrabajosEnCurso();
 
             TxtCantidadClientes.Text = clientes.Count.ToString();
             TxtCantidadMotos.Text = motos.Count.ToString();
-            TxtCantidadTrabajos.Text = servicios.Count.ToString();
+            TxtCantidadTrabajos.Text = trabajos.Count.ToString();
         }
 
         private void CargarTrabajosEnCurso()
