@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using WpfNavigationProject.Models;
 
+
 namespace WpfNavigationProject.DataAccess
 {
     public class MotoRepository
@@ -383,6 +384,135 @@ namespace WpfNavigationProject.DataAccess
 
             return null;
         }
+
+
+
+
+        
+    // ============================================================
+    // OBTENER DETALLE COMPLETO DE UNA MOTO
+    // ============================================================
+
+    public MotoDetalle? GetMotoDetalle(int idMoto)
+        {
+            string sql = @"
+            SELECT
+                m.IdMoto,
+                m.IdCliente,
+                m.Marca,
+                m.Modelo,
+                m.Anio,
+                m.Patente,
+                m.NroMotor,
+                m.NroChasis,
+                m.Observaciones,
+                m.FechaAlta,
+
+                c.Nombre AS NombreCliente,
+                c.DNI AS DNICliente,
+                c.Direccion AS DireccionCliente,
+                c.Telefono AS TelefonoCliente
+
+            FROM Motos m
+
+            INNER JOIN Clientes c
+                ON m.IdCliente = c.IdCliente
+
+            WHERE m.IdMoto = @IdMoto";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add(
+                    "@IdMoto",
+                    SqlDbType.Int)
+                    .Value = idMoto;
+
+                try
+                {
+                    connection.Open();
+
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new MotoDetalle
+                            {
+                                IdMoto = reader.GetInt32(
+                                    reader.GetOrdinal("IdMoto")),
+
+                                IdCliente = reader.GetInt32(
+                                    reader.GetOrdinal("IdCliente")),
+
+                                Marca = reader["Marca"] != DBNull.Value
+                                    ? reader["Marca"].ToString()!
+                                    : string.Empty,
+
+                                Modelo = reader["Modelo"] != DBNull.Value
+                                    ? reader["Modelo"].ToString()!
+                                    : string.Empty,
+
+                                Anio = reader["Anio"] != DBNull.Value
+                                    ? Convert.ToInt16(reader["Anio"])
+                                    : null,
+
+                                Patente = reader["Patente"] != DBNull.Value
+                                    ? reader["Patente"].ToString()!
+                                    : string.Empty,
+
+                                NroMotor = reader["NroMotor"] != DBNull.Value
+                                    ? reader["NroMotor"].ToString()!
+                                    : string.Empty,
+
+                                NroChasis = reader["NroChasis"] != DBNull.Value
+                                    ? reader["NroChasis"].ToString()!
+                                    : string.Empty,
+
+                                Observaciones = reader["Observaciones"] != DBNull.Value
+                                    ? reader["Observaciones"].ToString()!
+                                    : string.Empty,
+
+                                FechaAlta = reader["FechaAlta"] != DBNull.Value
+                                    ? Convert.ToDateTime(reader["FechaAlta"])
+                                    : DateTime.MinValue,
+
+                                NombreCliente = reader["NombreCliente"] != DBNull.Value
+                                    ? reader["NombreCliente"].ToString()!
+                                    : string.Empty,
+
+                                DNICliente = reader["DNICliente"] != DBNull.Value
+                                    ? reader["DNICliente"].ToString()!
+                                    : string.Empty,
+
+                                DireccionCliente = reader["DireccionCliente"] != DBNull.Value
+                                    ? reader["DireccionCliente"].ToString()!
+                                    : string.Empty,
+
+                                TelefonoCliente = reader["TelefonoCliente"] != DBNull.Value
+                                    ? reader["TelefonoCliente"].ToString()!
+                                    : string.Empty
+                            };
+                        }
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener el detalle de la moto: "
+                        + ex.Message);
+
+                    throw;
+                }
+            }
+
+            return null;
+        }
+
+
 
 
         // ============================================================

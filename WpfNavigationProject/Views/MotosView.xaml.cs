@@ -357,6 +357,30 @@ namespace WpfNavigationProject.Views
         }
 
 
+
+        
+        // ============================================================
+        // NAVEGAR AL DETALLE DE LA MOTO
+        // ============================================================
+
+        private void NavegarADetalle(
+            int idMoto)
+            {
+                MainWindow? mainWindow =
+                    Window.GetWindow(this) as MainWindow;
+
+                if (mainWindow != null)
+                {
+                    MotoDetalleView detalle =
+                        new MotoDetalleView(idMoto);
+
+                    mainWindow.ContentFrame.Navigate(detalle);
+                }
+            }
+
+
+
+
         // ============================================================
         // NUEVA MOTO
         // ============================================================
@@ -383,5 +407,26 @@ namespace WpfNavigationProject.Views
                 NavegarAFormulario(idMoto);
             }
         }
+
+
+        
+        // ============================================================
+        // VER DETALLE DE MOTO
+        // ============================================================
+
+        private void BtnVer_Click(
+            object sender,
+            RoutedEventArgs e)
+            {
+                if (sender is Button button &&
+                    button.Tag is int idMoto)
+                {
+                    NavegarADetalle(idMoto);
+                }
+            }
+
+
+
+
     }
 }

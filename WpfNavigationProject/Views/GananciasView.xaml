@@ -3,134 +3,590 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              mc:Ignorable="d"
              d:DesignHeight="700"
-             d:DesignWidth="1000">
+             d:DesignWidth="1000"
+             Background="Transparent">
 
-    <Grid Background="#F5F6F8" Margin="20">
+    <!-- ========================================================= -->
+    <!-- RECURSOS LOCALES -->
+    <!-- ========================================================= -->
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <UserControl.Resources>
 
+        <!-- ===================================================== -->
+        <!-- SOMBRA -->
+        <!-- ===================================================== -->
 
-        <!-- ================================================= -->
-        <!-- TÍTULO -->
-        <!-- ================================================= -->
-
-        <StackPanel Grid.Row="0">
-
-            <TextBlock Text="Ganancias"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Foreground="#1F2937"/>
-
-            <TextBlock Text="Registro de servicios cobrados"
-                       FontSize="14"
-                       Foreground="#6B7280"
-                       Margin="0,5,0,0"/>
-
-        </StackPanel>
+        <DropShadowEffect x:Key="ShadowDepth3"
+                          Color="Black"
+                          Direction="270"
+                          ShadowDepth="3"
+                          BlurRadius="5"
+                          Opacity="0.1"/>
 
 
-        <!-- ================================================= -->
-        <!-- RESUMEN -->
-        <!-- ================================================= -->
+        <!-- ===================================================== -->
+        <!-- BOTÓN EXCEL -->
+        <!-- ===================================================== -->
 
-        <Border Grid.Row="2"
-                Background="White"
-                CornerRadius="10"
-                Padding="20"
-                BorderBrush="#E5E7EB"
-                BorderThickness="1">
+        <Style x:Key="ExcelButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource AccionButtonStyle}">
 
-            <StackPanel>
+            <Setter Property="Background"
+                    Value="#16A34A"/>
 
-                <TextBlock Text="Total generado"
-                           FontSize="13"
-                           Foreground="#6B7280"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
 
-                <TextBlock x:Name="TxtTotalGanancias"
-                           Text="$ 0,00"
-                           FontSize="28"
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="#15803D"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </UserControl.Resources>
+
+
+    <!-- ========================================================= -->
+    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- ========================================================= -->
+
+    <Border Background="White"
+            CornerRadius="15"
+            Padding="30"
+            Effect="{StaticResource ShadowDepth3}">
+
+        <Grid>
+
+            <Grid.RowDefinitions>
+
+                <!-- Título -->
+                <RowDefinition Height="Auto"/>
+
+                <!-- Filtros -->
+                <RowDefinition Height="Auto"/>
+
+                <!-- Espacio -->
+                <RowDefinition Height="15"/>
+
+                <!-- Contenido -->
+                <RowDefinition Height="*"/>
+
+            </Grid.RowDefinitions>
+
+
+            <!-- ================================================= -->
+            <!-- TÍTULO -->
+            <!-- ================================================= -->
+
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,0,15">
+
+                <TextBlock Text="Ganancias"
+                           FontSize="36"
                            FontWeight="Bold"
-                           Foreground="#007ACC"
+                           Foreground="#333333"
+                           TextAlignment="Center"/>
+
+                <TextBlock Text="Registro y análisis de servicios cobrados"
+                           FontSize="14"
+                           Foreground="#6B7280"
+                           HorizontalAlignment="Center"
                            Margin="0,5,0,0"/>
 
             </StackPanel>
 
-        </Border>
+
+            <!-- ================================================= -->
+            <!-- FILTROS -->
+            <!-- ================================================= -->
+
+            <Border Grid.Row="1"
+                    Background="#F7F8FA"
+                    CornerRadius="10"
+                    Padding="15"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="180"/>
+
+                        <ColumnDefinition Width="30"/>
+
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="180"/>
+
+                        <ColumnDefinition Width="30"/>
+
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
 
 
-        <!-- ================================================= -->
-        <!-- TABLA DE GANANCIAS -->
-        <!-- ================================================= -->
+                    <!-- =============================== -->
+                    <!-- FECHA DESDE -->
+                    <!-- =============================== -->
 
-        <Border Grid.Row="4"
-                Background="White"
-                CornerRadius="10"
-                Padding="15"
-                BorderBrush="#E5E7EB"
-                BorderThickness="1">
+                    <StackPanel Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Margin="0,0,10,0">
 
-            <DataGrid x:Name="DgGanancias"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      HeadersVisibility="Column"
-                      BorderThickness="0"
-                      GridLinesVisibility="Horizontal"
-                      RowHeight="42">
+                        <TextBlock Text="Desde"
+                                   FontWeight="SemiBold"
+                                   Foreground="#444444"
+                                   Margin="0,0,0,5"/>
 
-                <DataGrid.Columns>
+                    </StackPanel>
 
-                    <!-- ID GANANCIA -->
-
-                    <DataGridTextColumn Header="ID Ganancia"
-                                        Binding="{Binding IdGanancia}"
-                                        Width="*"/>
+                    <DatePicker x:Name="DpFechaDesde"
+                                Grid.Column="1"
+                                Height="32"
+                                VerticalContentAlignment="Center"/>
 
 
-                    <!-- SERVICIO -->
+                    <!-- =============================== -->
+                    <!-- FECHA HASTA -->
+                    <!-- =============================== -->
 
-                    <DataGridTextColumn Header="Servicio"
-                                        Binding="{Binding IdServicio}"
-                                        Width="*"/>
+                    <StackPanel Grid.Column="3"
+                                VerticalAlignment="Center"
+                                Margin="0,0,10,0">
 
+                        <TextBlock Text="Hasta"
+                                   FontWeight="SemiBold"
+                                   Foreground="#444444"
+                                   Margin="0,0,0,5"/>
 
-                    <!-- MONTO -->
+                    </StackPanel>
 
-                    <DataGridTextColumn Header="Monto"
-                                        Width="*">
-
-                        <DataGridTextColumn.Binding>
-
-                            <Binding Path="Monto"
-                                     StringFormat="{}{0:C2}"
-                                     ConverterCulture="es-AR"/>
-
-                        </DataGridTextColumn.Binding>
-
-                    </DataGridTextColumn>
+                    <DatePicker x:Name="DpFechaHasta"
+                                Grid.Column="4"
+                                Height="32"
+                                VerticalContentAlignment="Center"/>
 
 
-                    <!-- FECHA -->
+                    <!-- =============================== -->
+                    <!-- FILTRAR -->
+                    <!-- =============================== -->
 
-                    <DataGridTextColumn Header="Fecha"
-                                        Binding="{Binding FechaGanancia,
-                                                  StringFormat={}{0:dd/MM/yyyy}}"
-                                        Width="*"/>
+                    <Button x:Name="BtnFiltrar"
+                            Grid.Column="6"
+                            Content="🔎 Filtrar"
+                            Width="110"
+                            Height="32"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Bottom"
+                            Click="BtnFiltrar_Click"
+                            Style="{StaticResource AccionButtonStyle}"/>
 
-                </DataGrid.Columns>
 
-            </DataGrid>
+                    <!-- =============================== -->
+                    <!-- LIMPIAR -->
+                    <!-- =============================== -->
 
-        </Border>
+                    <Button x:Name="BtnLimpiar"
+                            Grid.Column="7"
+                            Content="✖ Limpiar"
+                            Width="110"
+                            Height="32"
+                            VerticalAlignment="Bottom"
+                            Click="BtnLimpiar_Click"
+                            Style="{StaticResource AccionButtonStyle}"/>
 
-    </Grid>
+                </Grid>
+
+            </Border>
+
+
+            <!-- ================================================= -->
+            <!-- CONTENIDO PRINCIPAL -->
+            <!-- ================================================= -->
+
+            <Grid Grid.Row="3"
+                  Margin="0,15,0,0">
+
+                <Grid.ColumnDefinitions>
+
+                    <!-- TABLA -->
+                    <ColumnDefinition Width="1.25*"/>
+
+                    <!-- SEPARACIÓN -->
+                    <ColumnDefinition Width="15"/>
+
+                    <!-- PANEL DERECHO -->
+                    <ColumnDefinition Width="1*"/>
+
+                </Grid.ColumnDefinitions>
+
+
+                <!-- ================================================= -->
+                <!-- TABLA -->
+                <!-- ================================================= -->
+
+                <Border Grid.Column="0"
+                        Background="White"
+                        CornerRadius="10"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        Padding="15">
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+
+                            <RowDefinition Height="Auto"/>
+
+                            <RowDefinition Height="12"/>
+
+                            <RowDefinition Height="*"/>
+
+                        </Grid.RowDefinitions>
+
+
+                        <!-- TÍTULO TABLA -->
+
+                        <StackPanel Grid.Row="0">
+
+                            <TextBlock Text="Detalle de ganancias"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Foreground="#333333"/>
+
+                            <TextBlock Text="Servicios cobrados"
+                                       FontSize="13"
+                                       Foreground="#6B7280"
+                                       Margin="0,3,0,0"/>
+
+                        </StackPanel>
+
+
+                        <!-- ================================================= -->
+                        <!-- DATAGRID -->
+                        <!-- ================================================= -->
+
+                        <DataGrid x:Name="DgGanancias"
+                                  Grid.Row="2"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  SelectionMode="Single"
+                                  GridLinesVisibility="Horizontal"
+                                  RowBackground="White"
+                                  AlternatingRowBackground="#FFEFEFEF"
+                                  CanUserResizeColumns="True"
+                                  Foreground="#FF2A2A2A"
+                                  FontSize="14"
+                                  FontWeight="SemiBold"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  RowHeight="42"
+                                  CanUserAddRows="False">
+
+                            <!-- ================================================= -->
+                            <!-- ENCABEZADOS -->
+                            <!-- ================================================= -->
+
+                            <DataGrid.ColumnHeaderStyle>
+
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+
+                                    <Setter Property="Background"
+                                            Value="#FF007ACC"/>
+
+                                    <Setter Property="Foreground"
+                                            Value="White"/>
+
+                                    <Setter Property="HorizontalContentAlignment"
+                                            Value="Center"/>
+
+                                    <Setter Property="VerticalContentAlignment"
+                                            Value="Center"/>
+
+                                    <Setter Property="Padding"
+                                            Value="8"/>
+
+                                    <Setter Property="FontWeight"
+                                            Value="Bold"/>
+
+                                </Style>
+
+                            </DataGrid.ColumnHeaderStyle>
+
+
+                            <DataGrid.Columns>
+
+                                <!-- ============================= -->
+                                <!-- COSTO -->
+                                <!-- ============================= -->
+
+                                <DataGridTextColumn Header="Costo"
+                                                    Width="*">
+
+                                    <DataGridTextColumn.Binding>
+
+                                        <Binding Path="Monto"
+                                                 StringFormat="{}{0:C2}"
+                                                 ConverterCulture="es-AR"/>
+
+                                    </DataGridTextColumn.Binding>
+
+                                    <DataGridTextColumn.ElementStyle>
+
+                                        <Style TargetType="TextBlock">
+
+                                            <Setter Property="HorizontalAlignment"
+                                                    Value="Center"/>
+
+                                            <Setter Property="VerticalAlignment"
+                                                    Value="Center"/>
+
+                                        </Style>
+
+                                    </DataGridTextColumn.ElementStyle>
+
+                                </DataGridTextColumn>
+
+
+                                <!-- ============================= -->
+                                <!-- FECHA -->
+                                <!-- ============================= -->
+
+                                <DataGridTextColumn Header="Fecha"
+                                                    Binding="{Binding FechaGanancia,
+                                                              StringFormat={}{0:dd/MM/yyyy}}"
+                                                    Width="*">
+
+                                    <DataGridTextColumn.ElementStyle>
+
+                                        <Style TargetType="TextBlock">
+
+                                            <Setter Property="HorizontalAlignment"
+                                                    Value="Center"/>
+
+                                            <Setter Property="VerticalAlignment"
+                                                    Value="Center"/>
+
+                                        </Style>
+
+                                    </DataGridTextColumn.ElementStyle>
+
+                                </DataGridTextColumn>
+
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- PANEL DERECHO -->
+                <!-- ================================================= -->
+
+                <Grid Grid.Column="2">
+
+                    <Grid.RowDefinitions>
+
+                        <!-- GRÁFICO -->
+                        <RowDefinition Height="1.45*"/>
+
+                        <!-- SEPARACIÓN -->
+                        <RowDefinition Height="15"/>
+
+                        <!-- RESUMEN -->
+                        <RowDefinition Height="1*"/>
+
+                    </Grid.RowDefinitions>
+
+
+                    <!-- ================================================= -->
+                    <!-- GRÁFICO -->
+                    <!-- ================================================= -->
+
+                    <Border Grid.Row="0"
+                            Background="White"
+                            CornerRadius="10"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1"
+                            Padding="15">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="10"/>
+
+                                <RowDefinition Height="*"/>
+
+                            </Grid.RowDefinitions>
+
+
+                            <!-- TÍTULO GRÁFICO -->
+
+                            <StackPanel Grid.Row="0">
+
+                                <TextBlock Text="Ganancias en el tiempo"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="#333333"/>
+
+                                <TextBlock Text="Evolución de los servicios cobrados"
+                                           FontSize="13"
+                                           Foreground="#6B7280"
+                                           Margin="0,3,0,0"/>
+
+                            </StackPanel>
+
+
+                            <!-- GRÁFICO -->
+
+                            <lvc:CartesianChart x:Name="ChartGanancias"
+                                                Grid.Row="2"
+                                                LegendPosition="Hidden"
+                                                ZoomMode="X"
+                                                TooltipPosition="Top"
+                                                AnimationsSpeed="0:0:0.4"/>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- ================================================= -->
+                    <!-- RESUMEN -->
+                    <!-- ================================================= -->
+
+                    <Border Grid.Row="2"
+                            Background="White"
+                            CornerRadius="10"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1"
+                            Padding="20">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="10"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="15"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                            </Grid.RowDefinitions>
+
+
+                            <!-- TÍTULO -->
+
+                            <TextBlock Grid.Row="0"
+                                       Text="Resumen"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Foreground="#333333"/>
+
+
+                            <!-- TOTAL -->
+
+                            <StackPanel Grid.Row="2">
+
+                                <TextBlock Text="Total generado"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="#6B7280"/>
+
+                                <TextBlock x:Name="TxtTotalGanancias"
+                                           Text="$ 0,00"
+                                           FontSize="32"
+                                           FontWeight="Bold"
+                                           Foreground="#007ACC"
+                                           Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+
+                            <!-- ================================================= -->
+                            <!-- BOTÓN EXPORTAR EXCEL -->
+                            <!-- ================================================= -->
+
+                            <StackPanel Grid.Row="4"
+                                        Orientation="Horizontal">
+
+                                <Button x:Name="BtnExportarExcel"
+                                        Width="130"
+                                        Height="38"
+                                        Padding="8,0"
+                                        Click="BtnExportarExcel_Click"
+                                        Style="{StaticResource ExcelButtonStyle}">
+
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Center">
+
+                                        <Border Width="28"
+                                                Height="24"
+                                                Background="#15803D"
+                                                CornerRadius="4"
+                                                Margin="0,0,8,0">
+
+                                            <TextBlock Text="X"
+                                                       Foreground="White"
+                                                       FontSize="14"
+                                                       FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+
+                                        </Border>
+
+                                        <TextBlock Text="Exportar"
+                                                   VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Border>
+
+                </Grid>
+
+            </Grid>
+
+        </Grid>
+
+    </Border>
 
 </UserControl>

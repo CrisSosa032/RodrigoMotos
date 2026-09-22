@@ -303,24 +303,22 @@
                     <!-- ================================================= -->
                     <!-- EDITAR -->
                     <!-- ================================================= -->
-
-                    <DataGridTemplateColumn Header="Editar"
-                                            Width="110">
-
+                    <DataGridTemplateColumn Header="Editar" Width="110">
                         <DataGridTemplateColumn.CellTemplate>
-
                             <DataTemplate>
-
-                                <Button Content="✏️ Editar"
-                                        Click="BtnEditar_Click"
-                                        Margin="2"
-                                        Tag="{Binding IdMoto}"
-                                        Style="{StaticResource AccionButtonStyle}"/>
-
+                                <Button Content="✏️ Editar" Click="BtnEditar_Click" Margin="2" Tag="{Binding IdMoto}" Style="{StaticResource AccionButtonStyle}"/>
                             </DataTemplate>
-
                         </DataGridTemplateColumn.CellTemplate>
-
+                    </DataGridTemplateColumn>
+                    <!-- ================================================= -->
+                    <!-- VER DETALLE -->
+                    <!-- ================================================= -->
+                    <DataGridTemplateColumn Header="Ver" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="🔍 Ver" Click="BtnVer_Click" Margin="2" Tag="{Binding IdMoto}" Style="{StaticResource AccionButtonStyle}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
 

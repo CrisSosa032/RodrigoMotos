@@ -1,0 +1,551 @@
+﻿<UserControl x:Class="WpfNavigationProject.Views.MotoDetalleView"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          mc:Ignorable="d"
+          d:DesignHeight="700"
+          d:DesignWidth="1200">
+
+    
+    <UserControl.Resources>
+
+        <!-- Sombra general de las tarjetas -->
+        <DropShadowEffect x:Key="CardShadow"
+                      BlurRadius="12"
+                      ShadowDepth="2"
+                      Opacity="0.12"/>
+
+        <!-- Estilo general de títulos -->
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#263238"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+
+        <!-- Etiquetas de datos -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#78909C"/>
+            <Setter Property="Margin" Value="0,0,0,3"/>
+        </Style>
+
+        <!-- Valores de datos -->
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#263238"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- DataGrid general -->
+        <Style x:Key="DetailDataGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="RowHeight" Value="38"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <!-- Encabezados DataGrid -->
+        <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F5F7F8"/>
+            <Setter Property="Foreground" Value="#546E7A"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- Botón volver -->
+        <Style x:Key="BackButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#ECEFF1"/>
+            <Setter Property="Foreground" Value="#455A64"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,9"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
+
+
+    <Grid Background="#F4F6F8"
+      Margin="20">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+
+        <!-- ========================================================= -->
+        <!-- ENCABEZADO                                                 -->
+        <!-- ========================================================= -->
+
+        <Grid Grid.Row="0"
+          Margin="0,0,0,18">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+
+                <TextBlock Text="Detalle de motocicleta"
+                       FontSize="25"
+                       FontWeight="SemiBold"
+                       Foreground="#263238"/>
+
+                <TextBlock Text="Información de la moto y su historial de servicios"
+                       FontSize="13"
+                       Foreground="#78909C"
+                       Margin="0,4,0,0"/>
+
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                Content="←  VOLVER"
+                Style="{StaticResource BackButtonStyle}"
+                Click="BtnVolver_Click"
+                VerticalAlignment="Center"/>
+
+        </Grid>
+
+
+        <!-- ========================================================= -->
+        <!-- CONTENIDO PRINCIPAL                                        -->
+        <!-- ========================================================= -->
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="340"/>
+                <ColumnDefinition Width="18"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+
+            <!-- ===================================================== -->
+            <!-- COLUMNA IZQUIERDA - DATOS DE LA MOTO                   -->
+            <!-- ===================================================== -->
+
+            <Border Grid.Column="0"
+                Background="White"
+                CornerRadius="12"
+                Padding="22"
+                Effect="{StaticResource CardShadow}">
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                    <StackPanel>
+
+                        <!-- Encabezado moto -->
+
+                        <StackPanel Orientation="Horizontal"
+                                Margin="0,0,0,22">
+
+                            <Border Width="48"
+                                Height="48"
+                                Background="#E8F1F5"
+                                CornerRadius="24"
+                                Margin="0,0,12,0">
+
+                                <TextBlock Text="🏍"
+                                       FontSize="24"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                            </Border>
+
+                            <StackPanel VerticalAlignment="Center">
+
+                                <TextBlock Text="MOTOCICLETA"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#78909C"/>
+
+                                <TextBlock x:Name="TxtTituloMoto"
+                                       Text="Cargando..."
+                                       FontSize="17"
+                                       FontWeight="SemiBold"
+                                       Foreground="#263238"/>
+
+                            </StackPanel>
+
+                        </StackPanel>
+
+
+                        <!-- Datos de la moto -->
+
+                        <TextBlock Text="Datos de la moto"
+                               Style="{StaticResource SectionTitleStyle}"/>
+
+                        <TextBlock Text="Marca"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtMarca"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <TextBlock Text="Modelo"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtModelo"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+
+                                <TextBlock Text="Año"
+                                       Style="{StaticResource LabelStyle}"/>
+
+                                <TextBlock x:Name="TxtAnio"
+                                       Text="-"
+                                       Style="{StaticResource ValueStyle}"/>
+
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+
+                                <TextBlock Text="Patente"
+                                       Style="{StaticResource LabelStyle}"/>
+
+                                <TextBlock x:Name="TxtPatente"
+                                       Text="-"
+                                       Style="{StaticResource ValueStyle}"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+
+                        <TextBlock Text="N° de motor"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtNroMotor"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <TextBlock Text="N° de chasis"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtNroChasis"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <TextBlock Text="Fecha de alta"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtFechaAlta"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <TextBlock Text="Observaciones"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <Border Background="#F7F8F9"
+                            CornerRadius="7"
+                            Padding="10"
+                            Margin="0,0,0,18">
+
+                            <TextBlock x:Name="TxtObservaciones"
+                                   Text="Sin observaciones"
+                                   TextWrapping="Wrap"
+                                   Foreground="#455A64"
+                                   FontSize="13"
+                                   MinHeight="35"/>
+
+                        </Border>
+
+
+                        <!-- Separador -->
+
+                        <Border Height="1"
+                            Background="#ECEFF1"
+                            Margin="0,2,0,18"/>
+
+
+                        <!-- Datos del cliente -->
+
+                        <TextBlock Text="Cliente"
+                               Style="{StaticResource SectionTitleStyle}"/>
+
+                        <TextBlock Text="Nombre"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtCliente"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <TextBlock Text="DNI"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtDniCliente"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <TextBlock Text="Teléfono"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtTelefonoCliente"
+                               Text="-"
+                               Style="{StaticResource ValueStyle}"/>
+
+
+                        <TextBlock Text="Dirección"
+                               Style="{StaticResource LabelStyle}"/>
+
+                        <TextBlock x:Name="TxtDireccionCliente"
+                               Text="-"
+                               TextWrapping="Wrap"
+                               Style="{StaticResource ValueStyle}"/>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </Border>
+
+
+            <!-- ===================================================== -->
+            <!-- SEPARADOR ENTRE COLUMNAS                               -->
+            <!-- ===================================================== -->
+
+            <Grid Grid.Column="1"/>
+
+
+            <!-- ===================================================== -->
+            <!-- COLUMNA DERECHA                                        -->
+            <!-- ===================================================== -->
+
+            <Grid Grid.Column="2">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="18"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+
+                <!-- ================================================= -->
+                <!-- SERVICIOS DE LA MOTO                               -->
+                <!-- ================================================= -->
+
+                <Border Grid.Row="0"
+                    Background="White"
+                    CornerRadius="12"
+                    Padding="20"
+                    Effect="{StaticResource CardShadow}">
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+
+                        <Grid Grid.Row="0"
+                          Margin="0,0,0,12">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel>
+
+                                <TextBlock Text="Servicios"
+                                       Style="{StaticResource SectionTitleStyle}"
+                                       Margin="0,0,0,3"/>
+
+                                <TextBlock Text="Servicios realizados a esta motocicleta"
+                                       FontSize="12"
+                                       Foreground="#90A4AE"/>
+
+                            </StackPanel>
+
+                            <Border Grid.Column="1"
+                                Background="#E8F1F5"
+                                CornerRadius="12"
+                                Padding="11,5"
+                                VerticalAlignment="Center">
+
+                                <TextBlock x:Name="TxtCantidadServicios"
+                                       Text="0 servicios"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#546E7A"/>
+
+                            </Border>
+
+                        </Grid>
+
+
+                        <DataGrid x:Name="DgServicios"
+                              Grid.Row="1"
+                              Style="{StaticResource DetailDataGridStyle}"
+                              ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                              SelectionChanged="DgServicios_SelectionChanged">
+
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn Header="Fecha"
+                                                Binding="{Binding FechaEntrada, StringFormat={}{0:dd/MM/yyyy}}"
+                                                Width="95"/>
+
+                                <DataGridTextColumn Header="Estado"
+                                                Binding="{Binding NombreEstado}"
+                                                Width="110"/>
+
+                                <DataGridTextColumn Header="Detalle"
+                                                Binding="{Binding Detalle}"
+                                                Width="*"/>
+
+                                <DataGridTextColumn Header="Precio"
+                                                Binding="{Binding CostoEstimado, StringFormat={}{0:C}}"
+                                                Width="95"/>
+
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- ================================================= -->
+                <!-- HISTORIAL DEL SERVICIO                             -->
+                <!-- ================================================= -->
+
+                <Border Grid.Row="2"
+                    Background="White"
+                    CornerRadius="12"
+                    Padding="20"
+                    Effect="{StaticResource CardShadow}">
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+
+                        <StackPanel Grid.Row="0"
+                                Margin="0,0,0,12">
+
+                            <TextBlock Text="Historial del servicio"
+                                   Style="{StaticResource SectionTitleStyle}"
+                                   Margin="0,0,0,3"/>
+
+                            <TextBlock x:Name="TxtServicioSeleccionado"
+                                   Text="Seleccioná un servicio para consultar su historial"
+                                   FontSize="12"
+                                   Foreground="#90A4AE"/>
+
+                        </StackPanel>
+
+
+                        <!-- Mensaje inicial -->
+
+                        <Grid x:Name="PanelSinHistorial"
+                          Grid.Row="1">
+
+                            <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+
+                                <TextBlock Text="↕"
+                                       FontSize="32"
+                                       Foreground="#B0BEC5"
+                                       HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Seleccioná un servicio"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="#78909C"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,2"/>
+
+                                <TextBlock Text="Aquí podrás ver el historial de estados"
+                                       FontSize="12"
+                                       Foreground="#B0BEC5"
+                                       HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+
+                        <!-- Historial -->
+
+                        <DataGrid x:Name="DgHistorial"
+                              Grid.Row="1"
+                              Style="{StaticResource DetailDataGridStyle}"
+                              ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                              Visibility="Collapsed">
+
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn Header="Fecha"
+                                                Binding="{Binding FechaCambio, StringFormat={}{0:dd/MM/yyyy}}"
+                                                Width="150"/>
+
+                                <DataGridTextColumn Header="Estado"
+                                                Binding="{Binding NombreEstado}"
+                                                Width="*"/>
+
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+
+                    </Grid>
+
+                </Border>
+
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+    
+
+</UserControl>

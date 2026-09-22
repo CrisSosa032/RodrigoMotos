@@ -787,6 +787,240 @@ namespace WpfNavigationProject.DataAccess
         }
 
 
+
+        // ============================================================
+        // OBTENER SERVICIOS DE UNA MOTO
+        // ============================================================
+
+        public List<Servicios> GetServiciosByMoto(int idMoto)
+        {
+            List<Servicios> serviciosList =
+                new List<Servicios>();
+
+            string sql = @"
+        SELECT
+            s.IdServicio,
+            s.IdMoto,
+            s.IdEstado,
+            s.Detalle,
+            s.FechaEntrada,
+            s.CostoEstimado,
+
+            c.Nombre AS NombreCliente,
+
+            m.Marca AS MarcaMoto,
+            m.Modelo AS ModeloMoto,
+
+            e.NombreEstado AS NombreEstado
+
+        FROM Servicios s
+
+        INNER JOIN Motos m
+            ON s.IdMoto = m.IdMoto
+
+        INNER JOIN Clientes c
+            ON m.IdCliente = c.IdCliente
+
+        INNER JOIN EstadosServicio e
+            ON s.IdEstado = e.IdEstado
+
+        WHERE s.IdMoto = @IdMoto
+
+        ORDER BY
+            s.FechaEntrada DESC,
+            s.IdServicio DESC";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(
+                       sql,
+                       connection))
+            {
+                command.Parameters.Add(
+                    "@IdMoto",
+                    SqlDbType.Int)
+                    .Value = idMoto;
+
+                try
+                {
+                    connection.Open();
+
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            serviciosList.Add(new Servicios
+                            {
+                                IdServicio =
+                                    Convert.ToInt32(
+                                        reader["IdServicio"]),
+
+                                IdMoto =
+                                    Convert.ToInt32(
+                                        reader["IdMoto"]),
+
+                                IdEstado =
+                                    Convert.ToInt32(
+                                        reader["IdEstado"]),
+
+                                Detalle =
+                                    reader["Detalle"] != DBNull.Value
+                                        ? reader["Detalle"].ToString()
+                                            ?? string.Empty
+                                        : string.Empty,
+
+                                FechaEntrada =
+                                    Convert.ToDateTime(
+                                        reader["FechaEntrada"]),
+
+                                CostoEstimado =
+                                    reader["CostoEstimado"] != DBNull.Value
+                                        ? Convert.ToDecimal(
+                                            reader["CostoEstimado"])
+                                        : (decimal?)null,
+
+                                NombreCliente =
+                                    reader["NombreCliente"] != DBNull.Value
+                                        ? reader["NombreCliente"].ToString()
+                                            ?? string.Empty
+                                        : string.Empty,
+
+                                MarcaMoto =
+                                    reader["MarcaMoto"] != DBNull.Value
+                                        ? reader["MarcaMoto"].ToString()
+                                            ?? string.Empty
+                                        : string.Empty,
+
+                                ModeloMoto =
+                                    reader["ModeloMoto"] != DBNull.Value
+                                        ? reader["ModeloMoto"].ToString()
+                                            ?? string.Empty
+                                        : string.Empty,
+
+                                NombreEstado =
+                                    reader["NombreEstado"] != DBNull.Value
+                                        ? reader["NombreEstado"].ToString()
+                                            ?? string.Empty
+                                        : string.Empty
+                            });
+                        }
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener servicios de la moto: "
+                        + ex.Message);
+
+                    throw;
+                }
+            }
+
+            return serviciosList;
+        }
+
+
+
+
+        // ============================================================
+        // OBTENER HISTORIAL DE UN SERVICIO
+        // ============================================================
+
+        public List<ServicioHistorial> GetHistorialByServicio(
+            int idServicio)
+        {
+            List<ServicioHistorial> historial =
+                new List<ServicioHistorial>();
+
+            string sql = @"
+                SELECT
+                    sh.IdHistorial,
+                    sh.IdServicio,
+                    sh.IdEstado,
+                    sh.FechaCambio,
+
+                    e.NombreEstado AS NombreEstado
+
+                FROM ServicioHistorial sh
+
+                INNER JOIN EstadosServicio e
+                    ON sh.IdEstado = e.IdEstado
+
+                WHERE sh.IdServicio = @IdServicio
+
+                ORDER BY
+                    sh.FechaCambio ASC,
+                    sh.IdHistorial ASC";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(
+                       sql,
+                       connection))
+            {
+                command.Parameters.Add(
+                    "@IdServicio",
+                    SqlDbType.Int)
+                    .Value = idServicio;
+
+                try
+                {
+                    connection.Open();
+
+                    using (SqlDataReader reader =
+                           command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            historial.Add(new ServicioHistorial
+                            {
+                                IdHistorial =
+                                    Convert.ToInt32(
+                                        reader["IdHistorial"]),
+
+                                IdServicio =
+                                    Convert.ToInt32(
+                                        reader["IdServicio"]),
+
+                                IdEstado =
+                                    Convert.ToInt32(
+                                        reader["IdEstado"]),
+
+                                FechaCambio =
+                                    Convert.ToDateTime(
+                                        reader["FechaCambio"]),
+
+                                NombreEstado =
+                                    reader["NombreEstado"] != DBNull.Value
+                                        ? reader["NombreEstado"].ToString()
+                                            ?? string.Empty
+                                        : string.Empty
+                            });
+                        }
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Error SQL al obtener el historial del servicio: "
+                        + ex.Message);
+
+                    throw;
+                }
+            }
+
+            return historial;
+        }
+
+
+
+
+
         // ============================================================
         // ACTUALIZAR SERVICIO
         // ============================================================

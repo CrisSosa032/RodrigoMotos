@@ -570,7 +570,7 @@
                         VerticalAlignment="Center">
 
                     <Button x:Name="BtnPaginaAnterior"
-                        Content="‹ Anterior"
+                        Content="◀  Anterior"
                         Width="100"
                         Height="32"
                         Margin="5,0"
@@ -586,7 +586,7 @@
                            Margin="15,0"/>
 
                     <Button x:Name="BtnPaginaSiguiente"
-                        Content="Siguiente ›"
+                        Content="Siguiente  ▶"
                         Width="100"
                         Height="32"
                         Margin="5,0"
