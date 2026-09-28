@@ -4,12 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Rodrigo Motos" Height="730" Width="1200"
-        
+        Title="Rodrigo Motos"
+        Height="730"
+        Width="1200"
         WindowStartupLocation="CenterScreen">
 
     <!-- Definición de los colores y estilos principales -->
     <Window.Resources>
+
+        <!-- Estilo de los botones del Sidebar -->
         <Style TargetType="Button" x:Key="SidebarButtonStyle">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
@@ -19,125 +22,347 @@
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Cursor" Value="Hand"/>
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" 
-                                Background="{TemplateBinding Background}" 
-                                CornerRadius="8" 
+
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
                                 Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+                            <ContentPresenter
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"/>
+
                         </Border>
+
                         <ControlTemplate.Triggers>
+
+                            <!-- Efecto al pasar el mouse -->
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FF4C63B6"/>
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="#FF4C63B6"/>
                             </Trigger>
+
+                            <!-- Efecto al presionar -->
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FF3A50A1"/>
+
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="#FF3A50A1"/>
+
                                 <Setter Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                        <ScaleTransform
+                                            ScaleX="0.98"
+                                            ScaleY="0.98"/>
                                     </Setter.Value>
                                 </Setter>
-                                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+
+                                <Setter Property="RenderTransformOrigin"
+                                        Value="0.5,0.5"/>
+
                             </Trigger>
+
                         </ControlTemplate.Triggers>
+
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+
+
+        <!-- ========================================================= -->
+        <!-- ESTILO DEL BOTÓN CERRAR SESIÓN -->
+        <!-- ========================================================= -->
+
+        <Style TargetType="Button" x:Key="LogoutButtonStyle">
+
+            <Setter Property="Background" Value="#FF3D337D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="LogoutBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="22"
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <!-- MouseOver -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="LogoutBorder"
+                                        Property="Background"
+                                        Value="#FF4C63B6"/>
+                            </Trigger>
+
+                            <!-- Pressed -->
+                            <Trigger Property="IsPressed" Value="True">
+
+                                <Setter TargetName="LogoutBorder"
+                                        Property="Background"
+                                        Value="#FF3A50A1"/>
+
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform
+                                            ScaleX="0.97"
+                                            ScaleY="0.97"/>
+                                    </Setter.Value>
+                                </Setter>
+
+                                <Setter Property="RenderTransformOrigin"
+                                        Value="0.5,0.5"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
     </Window.Resources>
 
-    <!-- Contenedor principal Grid: Dos columnas para Sidebar y Contenido -->
+
+    <!-- ============================================================= -->
+    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- ============================================================= -->
+
     <Grid>
-        <!-- Columna 0: Menú Lateral (Ancho fijo) -->
+
+        <!-- Dos columnas:
+             0 = Sidebar
+             1 = Contenido -->
         <Grid.ColumnDefinitions>
+
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
+
         </Grid.ColumnDefinitions>
 
-        <!-- Sidebar: Columna 0 -->
-        <Border Grid.Column="0" Background="#FF483C90" Padding="15">
-            <StackPanel Cursor="">
-                <!-- Título del Panel -->
-                <TextBlock Text="Rodrigo Motos" 
-                           Foreground="White" 
-                           FontSize="20" 
-                           FontWeight="Bold" 
-                           Margin="0,0,0,20"/>
-                
-                
 
-                <!-- Botones de Navegación (Solo tienen el StackPanel como contenido) -->
+        <!-- ========================================================= -->
+        <!-- SIDEBAR -->
+        <!-- ========================================================= -->
 
-                <!-- 1. Inicio (Content corregido) -->
-                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Home" Click="SidebarButton_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                        <TextBlock Text="Inicio"/>
-                    </StackPanel>
-                </Button>
+        <Border Grid.Column="0"
+                Background="#FF483C90"
+                Padding="15">
 
-                <!-- 2. Clientes (Content corregido) -->
-                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Clientes" Click="SidebarButton_Click" Cursor="">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                        <TextBlock Text="Clientes"/>
-                    </StackPanel>
-                </Button>
+            <!-- Grid para poder mantener el botón de cerrar sesión
+                 pegado a la parte inferior -->
+            <Grid>
 
-                <!-- 3. Motos (Content corregido) -->
-                    <Button Style="{StaticResource SidebarButtonStyle}"  Tag="Motos"  Click="SidebarButton_Click" Cursor="">
+                <Grid.RowDefinitions>
+
+                    <!-- Contenido del menú -->
+                    <RowDefinition Height="Auto"/>
+
+                    <!-- Espacio flexible -->
+                    <RowDefinition Height="*"/>
+
+                    <!-- Cerrar sesión -->
+                    <RowDefinition Height="Auto"/>
+
+                </Grid.RowDefinitions>
+
+
+                <!-- ================================================= -->
+                <!-- MENÚ SUPERIOR -->
+                <!-- ================================================= -->
+
+                <StackPanel Grid.Row="0">
+
+                    <!-- Título -->
+                    <TextBlock Text="Rodrigo Motos"
+                               Foreground="White"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Margin="0,0,0,20"/>
+
+
+                    <!-- 1. Inicio -->
+                    <Button Style="{StaticResource SidebarButtonStyle}"
+                            Tag="Home"
+                            Click="SidebarButton_Click">
+
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xEC4A;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                            <TextBlock Text="Motos"/>
+
+                            <TextBlock Text="&#xE80F;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="16"
+                                       Margin="0,0,10,0"/>
+
+                            <TextBlock Text="Inicio"/>
+
                         </StackPanel>
+
                     </Button>
 
-                <!-- 4. Analíticas (Content corregido) -->
-                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Servicios" Click="SidebarButton_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE90F;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                        <TextBlock Text="Servicios"/>
+
+                    <!-- 2. Clientes -->
+                    <Button Style="{StaticResource SidebarButtonStyle}"
+                            Tag="Clientes"
+                            Click="SidebarButton_Click">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <TextBlock Text="&#xE716;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="16"
+                                       Margin="0,0,10,0"/>
+
+                            <TextBlock Text="Clientes"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+
+                    <!-- 3. Motos -->
+                    <Button Style="{StaticResource SidebarButtonStyle}"
+                            Tag="Motos"
+                            Click="SidebarButton_Click">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <TextBlock Text="&#xEC4A;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="16"
+                                       Margin="0,0,10,0"/>
+
+                            <TextBlock Text="Motos"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+
+                    <!-- 4. Servicios -->
+                    <Button Style="{StaticResource SidebarButtonStyle}"
+                            Tag="Servicios"
+                            Click="SidebarButton_Click">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <TextBlock Text="&#xE90F;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="16"
+                                       Margin="0,0,10,0"/>
+
+                            <TextBlock Text="Servicios"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+
+                    <!-- 5. Ganancias -->
+                    <Button Style="{StaticResource SidebarButtonStyle}"
+                            Tag="Ganancias"
+                            Click="SidebarButton_Click">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <TextBlock Text="&#xEC59;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="16"
+                                       Margin="0,0,10,0"/>
+
+                            <TextBlock Text="Ganancias"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+
+                    <!-- 6. Configuración -->
+                    <Button x:Name="BtnConfiguracion"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Tag="Configuracion"
+                            Click="SidebarButton_Click">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <TextBlock Text="&#xE713;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="16"
+                                       Margin="0,0,10,0"/>
+
+                            <TextBlock Text="Configuración"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+                </StackPanel>
+
+
+                <!-- ================================================= -->
+                <!-- BOTÓN CERRAR SESIÓN -->
+                <!-- ================================================= -->
+
+                <Button Grid.Row="2"
+                        x:Name="BtnCerrarSesion"
+                        Style="{StaticResource LogoutButtonStyle}"
+                        Click="BtnCerrarSesion_Click">
+
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+
+                        <!-- Icono Power / Activar-Desactivar -->
+                        <TextBlock Text="&#xE7E8;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="17"
+                                   Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Cerrar sesión"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"/>
+
                     </StackPanel>
+
                 </Button>
 
-                <!-- 5. Ganancias (Content corregido) -->
-                <Button Style="{StaticResource SidebarButtonStyle}" Tag="Ganancias" Click="SidebarButton_Click">
-                    <StackPanel Orientation="Horizontal" Cursor="">
-                        <TextBlock Text="&#xEC59;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+            </Grid>
 
-                        <TextBlock Text="Ganancias"/>
-                    </StackPanel>
-                </Button>
-
-                <!-- 6. Configuración (Content corregido) -->
-                
-                <Button x:Name="BtnConfiguracion"
-                                Style="{StaticResource SidebarButtonStyle}"
-                                Tag="Configuracion"
-                                Click="SidebarButton_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE713;"
-                                    FontFamily="Segoe MDL2 Assets"
-                                    FontSize="16"
-                                    Margin="0,0,10,0"/>
-                        <TextBlock Text="Configuración"/>
-                    </StackPanel>
-                </Button>
-               
-
-
-            </StackPanel>
         </Border>
 
-        <!-- Columna 1: Contenido Principal (Frame) -->
-        <!-- El Frame es el contenedor que carga las diferentes páginas (UserControls) -->
-        <Frame x:Name="ContentFrame" 
-               Grid.Column="1" 
-               NavigationUIVisibility="Hidden" 
-               Background="#F8F9FA" 
+
+        <!-- ========================================================= -->
+        <!-- CONTENIDO PRINCIPAL -->
+        <!-- ========================================================= -->
+
+        <Frame x:Name="ContentFrame"
+               Grid.Column="1"
+               NavigationUIVisibility="Hidden"
+               Background="#F8F9FA"
                Margin="20"/>
 
     </Grid>
+
 </Window>

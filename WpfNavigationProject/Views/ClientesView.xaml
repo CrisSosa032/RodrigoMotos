@@ -225,10 +225,6 @@
                                          Margin="0,0,18,0"
                                          Checked="FiltroCambiado"/>
 
-                                <RadioButton x:Name="RbTodos"
-                                         Content="Todos"
-                                         GroupName="EstadoClientes"
-                                         Checked="FiltroCambiado"/>
 
                             </StackPanel>
 
@@ -472,8 +468,7 @@
 
                                     <!-- DESACTIVAR -->
 
-                                    <Button Content="🗑️"
-                                        Click="BtnEliminar_Click"
+                                    <Button Click="BtnEliminar_Click"
                                         Tag="{Binding IdCliente}"
                                         Width="42"
                                         Height="24"
@@ -484,18 +479,18 @@
                                         <Button.Style>
 
                                             <Style TargetType="Button"
-                                               BasedOn="{StaticResource PeligroButtonStyle}">
+                                                   BasedOn="{StaticResource PeligroButtonStyle}">
 
                                                 <Setter Property="Visibility"
-                                                    Value="Visible"/>
+                                                        Value="Visible"/>
 
                                                 <Style.Triggers>
 
                                                     <DataTrigger Binding="{Binding Activo}"
-                                                             Value="False">
+                                                                 Value="False">
 
                                                         <Setter Property="Visibility"
-                                                            Value="Collapsed"/>
+                                                                Value="Collapsed"/>
 
                                                     </DataTrigger>
 
@@ -504,6 +499,35 @@
                                             </Style>
 
                                         </Button.Style>
+
+                                        <!-- Icono Power -->
+                                        <Viewbox Width="15"
+                                                 Height="15">
+
+                                            <Canvas Width="24"
+                                                    Height="24">
+
+                                                <!-- Círculo abierto -->
+                                                <Path Stroke="White"
+                                                      StrokeThickness="2.5"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"
+                                                      Data="M 7.5,4.2
+                                                            A 9,9 0 1 0 16.5,4.2"/>
+
+                                                <!-- Línea central -->
+                                                <Line X1="12"
+                                                      Y1="3"
+                                                      X2="12"
+                                                      Y2="11"
+                                                      Stroke="White"
+                                                      StrokeThickness="2.5"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"/>
+
+                                            </Canvas>
+
+                                        </Viewbox>
 
                                     </Button>
 
@@ -599,18 +623,40 @@
 
 
             <!-- ================================================= -->
-            <!-- NUEVO CLIENTE -->
+            <!-- ACCIONES -->
             <!-- ================================================= -->
 
-            <Button Grid.Row="5"
-                Content="+ Nuevo Cliente"
-                Name="BtnNuevoCliente"
-                Click="BtnNuevoCliente_Click"
-                Style="{StaticResource AccionButtonStyle}"
-                Margin="0,15,0,0"
-                HorizontalAlignment="Center"
-                Width="180"
-                Height="35"/>
+            <StackPanel Grid.Row="5"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            Margin="0,15,0,0">
+
+                <!-- ============================================= -->
+                <!-- DESACTIVAR CLIENTES INACTIVOS -->
+                <!-- ============================================= -->
+
+                <Button x:Name="BtnDesactivarInactivos"
+                        Content="⚡ Desactivar inactivos"
+                        Click="BtnDesactivarInactivos_Click"
+                        Style="{StaticResource PeligroButtonStyle}"
+                        Margin="0,0,10,0"
+                        Width="190"
+                        Height="35"
+                        ToolTip="Desactivar clientes sin actividad durante el período establecido"/>
+
+
+                <!-- ============================================= -->
+                <!-- NUEVO CLIENTE -->
+                <!-- ============================================= -->
+
+                <Button x:Name="BtnNuevoCliente"
+                        Content="+ Nuevo Cliente"
+                        Click="BtnNuevoCliente_Click"
+                        Style="{StaticResource AccionButtonStyle}"
+                        Width="180"
+                        Height="35"/>
+
+            </StackPanel>
 
         </Grid>
 

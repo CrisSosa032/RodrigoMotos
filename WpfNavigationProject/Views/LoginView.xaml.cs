@@ -40,16 +40,7 @@ namespace WPF_LoginForm.View
 
             if (usuario != null)
             {
-                // =====================================================
-                // DESACTIVACIÓN AUTOMÁTICA DE CLIENTES INACTIVOS
-                // =====================================================
-
-                ClienteRepository clienteRepository =
-                    new ClienteRepository();
-
-                clienteRepository.DesactivarClientesInactivos();
-
-
+                
                 // =====================================================
                 // ABRIR APLICACIÓN
                 // =====================================================

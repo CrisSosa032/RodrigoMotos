@@ -88,19 +88,10 @@ namespace WpfNavigationProject.Views
                 // ESTADO
                 // ---------------------------------------------
 
-                bool? activo = true;
-
-                if (RbActivos.IsChecked == true)
+                bool activo = true; 
+                if (RbInactivos.IsChecked == true) 
                 {
-                    activo = true;
-                }
-                else if (RbInactivos.IsChecked == true)
-                {
-                    activo = false;
-                }
-                else if (RbTodos.IsChecked == true)
-                {
-                    activo = null;
+                    activo = false; 
                 }
 
 
@@ -489,6 +480,70 @@ namespace WpfNavigationProject.Views
                 }
             }
         }
+
+
+        // =========================================================
+        // DESACTIVAR CLIENTES INACTIVOS
+        // =========================================================
+
+        private void BtnDesactivarInactivos_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            MessageBoxResult resultado =
+                MessageBox.Show(
+                    "Esta acción desactivará automáticamente a los clientes " +
+                    "que no hayan registrado servicios durante los últimos 3 meses.\n\n" +
+                    "¿Deseas continuar?",
+                    "Desactivar clientes inactivos",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+            if (resultado != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                int cantidadDesactivados =
+                _clienteRepository.DesactivarClientesInactivos();
+
+                    if (cantidadDesactivados > 0)
+                    {
+                        MessageBox.Show(
+                            $"Se desactivaron {cantidadDesactivados} " +
+                            $"cliente{(cantidadDesactivados == 1 ? "" : "s")} " +
+                            "por no registrar servicios durante los últimos 3 meses.",
+                            "Desactivación completada",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "No se encontraron clientes que cumplieran " +
+                            "la condición de inactividad.\n\n" +
+                            "No se realizó ninguna desactivación.",
+                            "Sin cambios",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+
+                    _paginaActual = 1;
+                    AplicarFiltros();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudieron desactivar los clientes inactivos.\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+
     }
 
 }

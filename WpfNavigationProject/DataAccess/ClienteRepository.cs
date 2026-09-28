@@ -698,25 +698,25 @@ namespace WpfNavigationProject.DataAccess
         // DESACTIVACIÓN AUTOMÁTICA DE CLIENTES INACTIVOS
         // --------------------------------------------------------
 
-        public void DesactivarClientesInactivos()
+        public int DesactivarClientesInactivos()
         {
             string sql = @"
-                UPDATE Clientes
-                SET
-                    Activo = 0,
-                    FechaBaja = CAST(GETDATE() AS DATE)
-                WHERE
-                    Activo = 1
-                    AND IdCliente IN
-                    (
-                        SELECT m.IdCliente
-                        FROM Motos m
-                        INNER JOIN Servicios s
-                            ON s.IdMoto = m.IdMoto
-                        GROUP BY m.IdCliente
-                        HAVING MAX(s.FechaEntrada) <
-                               DATEADD(MONTH, -3, GETDATE())
-                    );";
+            UPDATE Clientes
+            SET
+                Activo = 0,
+                FechaBaja = CAST(GETDATE() AS DATE)
+            WHERE
+            Activo = 1
+            AND IdCliente IN
+                (
+                    SELECT m.IdCliente
+                    FROM Motos m
+                    INNER JOIN Servicios s
+                        ON s.IdMoto = m.IdMoto
+                    GROUP BY m.IdCliente
+                    HAVING MAX(s.FechaEntrada) <
+                           DATEADD(MONTH, -3, GETDATE())
+                );";
 
             using (SqlConnection connection = DbHelper.CreateConnection())
             using (SqlCommand command = new SqlCommand(sql, connection))
@@ -725,7 +725,9 @@ namespace WpfNavigationProject.DataAccess
                 {
                     connection.Open();
 
-                    command.ExecuteNonQuery();
+                    int filasAfectadas = command.ExecuteNonQuery();
+
+                    return filasAfectadas;
                 }
                 catch (SqlException ex)
                 {

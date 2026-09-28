@@ -56,50 +56,73 @@ namespace WpfNavigationProject.Views
         private void GananciasView_Loaded(
             object sender,
             RoutedEventArgs e)
-        {
-            CargarGanancias();
-        }
+                {
+                    DateTime hoy = DateTime.Today;
+
+                    // Primer día del mes actual
+                    DateTime primerDiaMes =
+                        new DateTime(hoy.Year, hoy.Month, 1);
+
+                    // Último día del mes actual
+                    DateTime ultimoDiaMes =
+                        primerDiaMes.AddMonths(1).AddDays(-1);
+
+                    // Cargar fechas en los DatePicker
+                    DpFechaDesde.SelectedDate = primerDiaMes;
+                    DpFechaHasta.SelectedDate = ultimoDiaMes;
+
+                    // Cargar automáticamente las ganancias del mes
+                    CargarGanancias(
+                        primerDiaMes,
+                        ultimoDiaMes);
+                }
 
 
         // ============================================================
         // CARGAR TODAS LAS GANANCIAS
         // ============================================================
 
-        private void CargarGanancias()
-        {
-            try
-            {
-                List<Ganancia> ganancias =
-                    _repository.GetAllGanancias();
+        private void CargarGanancias(
+            DateTime? fechaDesde,
+            DateTime? fechaHasta)
+                {
+                    try
+                        {
+                            List<Ganancia> ganancias =
+                                _repository.GetGananciasFiltradas(
+                                    fechaDesde,
+                                    fechaHasta);
 
-                _gananciasActuales = ganancias;
+                            _gananciasActuales = ganancias;
 
-                DgGanancias.ItemsSource = ganancias;
+                            DgGanancias.ItemsSource = ganancias;
 
-                _reporteActual =
-                    _repository.GetGananciasReporteFiltradas(
-                        null,
-                        null);
+                            _reporteActual =
+                                _repository.GetGananciasReporteFiltradas(
+                                    fechaDesde,
+                                    fechaHasta);
 
-                decimal total =
-                    _repository.GetTotalGanancias();
+                            decimal total =
+                                _repository.GetTotalGananciasFiltradas(
+                                    fechaDesde,
+                                    fechaHasta);
 
-                TxtTotalGanancias.Text =
-                    total.ToString(
-                        "C2",
-                        _culturaArgentina);
+                            TxtTotalGanancias.Text =
+                                total.ToString(
+                                    "C2",
+                                    _culturaArgentina);
 
-                ActualizarGrafico(ganancias);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"No se pudieron cargar las ganancias.\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-        }
+                            ActualizarGrafico(ganancias);
+                        }
+                    catch (Exception ex)
+                        {
+                            MessageBox.Show(
+                                $"No se pudieron cargar las ganancias.\n\n{ex.Message}",
+                                "Error",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+                        }
+                }
 
 
         // ============================================================
@@ -176,10 +199,24 @@ namespace WpfNavigationProject.Views
             object sender,
             RoutedEventArgs e)
         {
-            DpFechaDesde.SelectedDate = null;
-            DpFechaHasta.SelectedDate = null;
+            DateTime hoy = DateTime.Today;
 
-            CargarGanancias();
+            // Primer día del mes actual
+            DateTime primerDiaMes =
+                new DateTime(hoy.Year, hoy.Month, 1);
+
+            // Último día del mes actual
+            DateTime ultimoDiaMes =
+                primerDiaMes.AddMonths(1).AddDays(-1);
+
+            // Restaurar los filtros al período inicial
+            DpFechaDesde.SelectedDate = primerDiaMes;
+            DpFechaHasta.SelectedDate = ultimoDiaMes;
+
+            // Volver a cargar las ganancias del mes actual
+            CargarGanancias(
+                primerDiaMes,
+                ultimoDiaMes);
         }
 
 
