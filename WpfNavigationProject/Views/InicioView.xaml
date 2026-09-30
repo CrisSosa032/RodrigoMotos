@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              mc:Ignorable="d"
              d:DesignHeight="700"
              d:DesignWidth="1100">
@@ -12,7 +13,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
 
@@ -22,7 +22,7 @@
 
         <Border Grid.Row="0"
                 Background="White"
-                Padding="30,25"
+                Padding="30,24"
                 BorderBrush="#E5E7EB"
                 BorderThickness="0,0,0,1">
 
@@ -34,170 +34,603 @@
                 </Grid.RowDefinitions>
 
 
-                <!-- Saludo -->
-
-                <StackPanel Grid.Row="0">
-                    <TextBlock x:Name="TxtSaludo"
-                               Text="¡Hola! 👋"
-                               FontSize="27"
-                               FontWeight="SemiBold"
-                               Foreground="#1F2937"/>
-
-                    <TextBlock Text="Resumen del taller"
-                               Margin="0,5,0,0"
-                               FontSize="14"
-                               Foreground="#6B7280"/>
-
-                </StackPanel>
-
-
-                <!-- Estadísticas -->
-
-                <Grid Grid.Row="1"
-                      Margin="0,25,0,0">
+                <Grid Grid.Row="0">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- SALUDO -->
+
+                    <StackPanel Grid.Column="0"
+                VerticalAlignment="Center">
+
+                        <TextBlock x:Name="TxtSaludo"
+                   Text="¡Hola! 👋"
+                   FontSize="27"
+                   FontWeight="SemiBold"
+                   Foreground="#1F2937"/>
+
+                        <TextBlock Text="Panel de control del taller"
+                   Margin="0,5,0,0"
+                   FontSize="14"
+                   Foreground="#6B7280"/>
+
+                    </StackPanel>
+
+
+                    <!-- ACCIONES RÁPIDAS -->
+
+                    <StackPanel Grid.Column="1"
+                Orientation="Horizontal"
+                VerticalAlignment="Center"
+                Margin="20,0,0,0">
+
+                        <!-- Nuevo cliente -->
+
+                        <Button Width="145"
+                Height="38"
+                Margin="0,0,8,0"
+                Background="#F8FAFC"
+                BorderBrush="#D1D5DB"
+                BorderThickness="1"
+                Cursor="Hand"
+                ToolTip="Registrar un nuevo cliente"
+                Click="NuevoCliente_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <TextBlock Text="👤"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Nuevo cliente"
+                           Margin="7,0,0,0"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="#374151"
+                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+                        <!-- Nueva moto -->
+
+                        <Button Width="135"
+                Height="38"
+                Margin="0,0,8,0"
+                Background="#F8FAFC"
+                BorderBrush="#D1D5DB"
+                BorderThickness="1"
+                Cursor="Hand"
+                ToolTip="Registrar una nueva moto"
+                Click="NuevaMoto_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <TextBlock Text="🏍️"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Nueva moto"
+                           Margin="7,0,0,0"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="#374151"
+                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+                        <!-- Nuevo servicio -->
+
+                        <Button Width="150"
+                Height="38"
+                Background="#2563EB"
+                BorderBrush="#2563EB"
+                BorderThickness="1"
+                Cursor="Hand"
+                ToolTip="Crear un nuevo servicio"
+                Click="NuevoServicio_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <TextBlock Text="🔧"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Nuevo servicio"
+                           Margin="7,0,0,0"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </StackPanel>
+
+                </Grid>
+
+
+                <!-- ================================================= -->
+                <!-- RESUMEN DE FACTURACIÓN -->
+                <!-- ================================================= -->
+
+                <Border Grid.Row="1"
+                    Margin="0,22,0,0"
+                    Background="White"
+                    CornerRadius="12"
+                    Padding="22"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+
+                        <!-- ================================================= -->
+                        <!-- FACTURACIÓN -->
+                        <!-- ================================================= -->
+
+                        <StackPanel Grid.Column="0"
+                            VerticalAlignment="Center">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Border Width="42"
+                                Height="42"
+                                Background="#EAF8EF"
+                                CornerRadius="10">
+
+                                    <TextBlock Text="💰"
+                               FontSize="20"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+
+                                </Border>
+
+                                <StackPanel Margin="13,0,0,0">
+
+                                    <TextBlock Text="Facturación del mes"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="#374151"/>
+
+                                    <TextBlock x:Name="TxtPeriodoFacturacion"
+                               Text="Septiembre 2026"
+                               Margin="0,2,0,0"
+                               FontSize="11"
+                               Foreground="#9CA3AF"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+
+                            <TextBlock x:Name="TxtFacturacionMes"
+                                Text="$ 0,00"
+                                Margin="0,13,0,0"
+                                FontSize="27"
+                                FontWeight="Bold"
+                                Foreground="#1F2937"/>
+
+                        </StackPanel>
+
+
+                        <!-- ================================================= -->
+                        <!-- SERVICIOS COBRADOS -->
+                        <!-- ================================================= -->
+
+                        <Border Grid.Column="1"
+                            Margin="20,0,10,0"
+                            Padding="20,0,0,0"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1,0,0,0">
+
+                            <StackPanel VerticalAlignment="Center">
+
+                                <TextBlock Text="Servicios cobrados"
+                           FontSize="12"
+                           Foreground="#6B7280"/>
+
+                                <TextBlock x:Name="TxtServiciosCobrados"
+                           Text="0"
+                           Margin="0,4,0,0"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="#1F2937"/>
+
+                                <TextBlock Text="Durante el mes"
+                           Margin="0,2,0,0"
+                           FontSize="11"
+                           Foreground="#9CA3AF"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+                        <!-- ================================================= -->
+                        <!-- TICKET PROMEDIO -->
+                        <!-- ================================================= -->
+
+                        <Border Grid.Column="2"
+                            Margin="10,0,0,0"
+                            Padding="20,0,0,0"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1,0,0,0">
+
+                            <StackPanel VerticalAlignment="Center">
+
+                                <TextBlock Text="Ticket promedio"
+                           FontSize="12"
+                           Foreground="#6B7280"/>
+
+                                <TextBlock x:Name="TxtTicketPromedio"
+                           Text="$ 0,00"
+                           Margin="0,4,0,0"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="#1F2937"/>
+
+                                <TextBlock Text="Por servicio cobrado"
+                           Margin="0,2,0,0"
+                           FontSize="11"
+                           Foreground="#9CA3AF"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </Grid>
+
+                </Border>
+
+            </Grid>
+
+        </Border>
+
+
+        <!-- ===================================================== -->
+        <!-- CONTENIDO PRINCIPAL -->
+        <!-- ===================================================== -->
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled" Cursor="">
+
+            <StackPanel Margin="30,22,30,25">
+
+
+                <!-- ================================================= -->
+                <!-- GRÁFICO + RESUMEN -->
+                <!-- ================================================= -->
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.25*"/>
+                        <ColumnDefinition Width="0.75*"/>
                     </Grid.ColumnDefinitions>
 
 
-                    <!-- Motos -->
+                    <!-- ================================================= -->
+                    <!-- GRÁFICO -->
+                    <!-- ================================================= -->
 
                     <Border Grid.Column="0"
-                            Margin="0,0,10,0"
-                            Background="#F8FAFC"
-                            CornerRadius="10"
-                            Padding="18">
+                            Margin="0,0,8,0"
+                            Background="White"
+                            CornerRadius="12"
+                            Padding="22"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1">
 
                         <Grid>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                            <Border Width="45"
-                                    Height="45"
-                                    Background="#E8F1FF"
-                                    CornerRadius="10">
 
-                                <TextBlock Text="🏍️"
-                                           FontSize="22"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                            <!-- Título -->
 
-                            </Border>
+                            <StackPanel Grid.Row="0">
 
-                            <StackPanel Grid.Column="1"
-                                        Margin="15,0,0,0"
-                                        VerticalAlignment="Center">
+                                <TextBlock Text="Actividad del mes"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="#1F2937"/>
 
-                                <TextBlock x:Name="TxtCantidadMotos"
-                                                    Text="0"
-                                                    FontSize="23"
-                                                    FontWeight="Bold"
-                                                    Foreground="#1F2937"/>   
-                                <TextBlock Text="Motos registradas"
-                                           FontSize="13"
+                                <TextBlock x:Name="TxtPeriodoGrafico"
+                                           Text="Servicios ingresados durante el mes actual"
+                                           Margin="0,4,0,0"
+                                           FontSize="12"
                                            Foreground="#6B7280"/>
 
                             </StackPanel>
+
+
+                            <!-- Gráfico -->
+
+                            <Grid Grid.Row="1"
+                                  Margin="0,12,0,0">
+
+                                <lvc:PieChart x:Name="ChartEstados"
+                                              Height="245"
+                                              LegendPosition="Bottom"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Center"/>
+
+                                <!-- Texto central -->
+                                <StackPanel HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,0,28">
+
+                                    <TextBlock x:Name="TxtTotalServiciosMes"
+                                               Text="0"
+                                               FontSize="25"
+                                               FontWeight="Bold"
+                                               Foreground="#1F2937"
+                                               HorizontalAlignment="Center"/>
+
+                                    <TextBlock Text="servicios"
+                                               FontSize="11"
+                                               Foreground="#6B7280"
+                                               HorizontalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Grid>
 
                         </Grid>
 
                     </Border>
 
 
-                    <!-- Clientes -->
+                    <!-- ================================================= -->
+                    <!-- RESUMEN DEL TALLER -->
+                    <!-- ================================================= -->
 
                     <Border Grid.Column="1"
-                            Margin="5,0"
-                            Background="#F8FAFC"
-                            CornerRadius="10"
-                            Padding="18">
+                            Margin="8,0,0,0"
+                            Background="White"
+                            CornerRadius="12"
+                            Padding="22"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1">
 
                         <Grid>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                            <Border Width="45"
-                                    Height="45"
-                                    Background="#EAF8EF"
-                                    CornerRadius="10">
 
-                                <TextBlock Text="👥"
-                                           FontSize="22"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                            <!-- Título -->
 
-                            </Border>
+                            <StackPanel Grid.Row="0">
 
-                            <StackPanel Grid.Column="1"
-                                        Margin="15,0,0,0"
-                                        VerticalAlignment="Center">
+                                <TextBlock Text="Resumen del taller"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="#1F2937"/>
 
-                                <TextBlock x:Name="TxtCantidadClientes"
-                                                    Text="0"
-                                                    FontSize="23"
-                                                    FontWeight="Bold"
-                                                    Foreground="#1F2937"/>
-
-                                <TextBlock Text="Clientes registrados"
-                                           FontSize="13"
+                                <TextBlock Text="Situación actual"
+                                           Margin="0,4,0,0"
+                                           FontSize="12"
                                            Foreground="#6B7280"/>
 
                             </StackPanel>
 
-                        </Grid>
 
-                    </Border>
+                            <!-- Indicadores -->
+
+                            <StackPanel Grid.Row="1"
+                                        Margin="0,18,0,0">
 
 
-                    <!-- Trabajos -->
+                                <!-- INGRESADAS -->
 
-                    <Border Grid.Column="2"
-                            Margin="10,0,0,0"
-                            Background="#F8FAFC"
-                            CornerRadius="10"
-                            Padding="18">
+                                <Border Background="#FFFAF0"
+                                        CornerRadius="9"
+                                        Padding="13"
+                                        Margin="0,0,0,9"
+                                        Cursor="Hand"
+                                        ToolTip="Ver servicios ingresados"
+                                        MouseLeftButtonUp="ServiciosIngresados_Click">
 
-                        <Grid>
+                                    <Grid>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                            <Border Width="45"
-                                    Height="45"
-                                    Background="#FFF5E6"
-                                    CornerRadius="10">
+                                        <TextBlock Text="📥"
+                                                   FontSize="17"
+                                                   VerticalAlignment="Center"/>
 
-                                <TextBlock Text="🔧"
-                                           FontSize="22"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1"
+                                                    Margin="10,0,0,0">
 
-                            </Border>
+                                            <TextBlock Text="Ingresadas"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"/>
 
-                            <StackPanel Grid.Column="1"
-                                        Margin="15,0,0,0"
-                                        VerticalAlignment="Center">
+                                            <TextBlock Text="Esperando comenzar"
+                                                       FontSize="11"
+                                                       Foreground="#9CA3AF"/>
 
-                                <TextBlock x:Name="TxtCantidadTrabajos"
-                                                    Text="0"
-                                                    FontSize="23"
-                                                    FontWeight="Bold"
-                                                    Foreground="#1F2937"/>
+                                        </StackPanel>
 
-                                <TextBlock Text="Trabajos en curso"
-                                           FontSize="13"
-                                           Foreground="#6B7280"/>
+                                        <TextBlock x:Name="TxtResumenIngresadas"
+                                                   Grid.Column="2"
+                                                   Text="0"
+                                                   FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Foreground="#374151"
+                                                   VerticalAlignment="Center"/>
+
+                                    </Grid>
+
+                                </Border>
+
+
+                                <!-- EN PROCESO -->
+
+                                <Border Background="#F3F7FF"
+                                        CornerRadius="9"
+                                        Padding="13"
+                                        Margin="0,0,0,9"
+                                        Cursor="Hand"
+                                        ToolTip="Ver servicios en proceso"
+                                        MouseLeftButtonUp="ServiciosEnProceso_Click">
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="🔧"
+                                                   FontSize="17"
+                                                   VerticalAlignment="Center"/>
+
+                                        <StackPanel Grid.Column="1"
+                                                    Margin="10,0,0,0">
+
+                                            <TextBlock Text="En proceso"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"/>
+
+                                            <TextBlock Text="Trabajándose actualmente"
+                                                       FontSize="11"
+                                                       Foreground="#9CA3AF"/>
+
+                                        </StackPanel>
+
+                                        <TextBlock x:Name="TxtResumenEnProceso"
+                                                   Grid.Column="2"
+                                                   Text="0"
+                                                   FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Foreground="#374151"
+                                                   VerticalAlignment="Center"/>
+
+                                    </Grid>
+
+                                </Border>
+
+
+                                <!-- TERMINADAS -->
+
+                                <Border Background="#F1FAF4"
+                                        CornerRadius="9"
+                                        Padding="13"
+                                        Margin="0,0,0,9"
+                                        Cursor="Hand"
+                                        ToolTip="Ver servicios listos para entregar"
+                                        MouseLeftButtonUp="ServiciosTerminados_Click">
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="🏁"
+                                                   FontSize="17"
+                                                   VerticalAlignment="Center"/>
+
+                                        <StackPanel Grid.Column="1"
+                                                    Margin="10,0,0,0">
+
+                                            <TextBlock Text="Listas para entregar"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#374151"/>
+
+                                            <TextBlock Text="Pendientes de entrega"
+                                                       FontSize="11"
+                                                       Foreground="#9CA3AF"/>
+
+                                        </StackPanel>
+
+                                        <TextBlock x:Name="TxtResumenTerminadas"
+                                                   Grid.Column="2"
+                                                   Text="0"
+                                                   FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Foreground="#374151"
+                                                   VerticalAlignment="Center"/>
+
+                                    </Grid>
+
+                                </Border>
+
+
+                                <!-- SEPARADOR -->
+
+                                <Border Height="1"
+                                        Background="#E5E7EB"
+                                        Margin="0,7,0,15"/>
+
+
+                                <!-- TOTAL DEL MES -->
+
+                                <Grid>
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Servicios del mes"
+                                                   FontSize="12"
+                                                   Foreground="#6B7280"/>
+
+                                        <TextBlock Text="Total ingresado"
+                                                   Margin="0,2,0,0"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#374151"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock x:Name="TxtResumenTotalMes"
+                                               Grid.Column="1"
+                                               Text="0"
+                                               FontSize="23"
+                                               FontWeight="Bold"
+                                               Foreground="#1F2937"
+                                               VerticalAlignment="Center"/>
+
+                                </Grid>
 
                             </StackPanel>
 
@@ -207,190 +640,104 @@
 
                 </Grid>
 
-            </Grid>
 
-        </Border>
+                <!-- ================================================= -->
+                <!-- TRABAJOS EN CURSO -->
+                <!-- ================================================= -->
 
+                <Grid Margin="0,22,0,0">
 
-        <!-- ===================================================== -->
-        <!-- CENTRO - TRABAJOS EN CURSO -->
-        <!-- ===================================================== -->
-
-        <Grid Grid.Row="1"
-              Margin="30,25,30,25">
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
 
-            <!-- Título -->
+                    <!-- Título -->
 
-            <Grid Grid.Row="0"
-                  Margin="0,0,0,15">
+                    <Grid Grid.Row="0">
 
-                <TextBlock Text="Trabajos en curso"
-                           FontSize="20"
-                           FontWeight="SemiBold"
-                           Foreground="#1F2937"/>
+                        <StackPanel>
 
-                <TextBlock Text="Servicios actualmente en el taller"
-                           Margin="0,30,0,0"
-                           FontSize="13"
-                           Foreground="#6B7280"/>
-
-            </Grid>
-
-
-            <!-- Lista -->
-
-            <ScrollViewer Grid.Row="1"
-                          VerticalScrollBarVisibility="Auto">
-
-                <StackPanel x:Name="PanelTrabajos">
-
-
-                    
-
-                </StackPanel>
-
-            </ScrollViewer>
-
-        </Grid>
-
-
-        <!-- ===================================================== -->
-        <!-- FOOTER - ACCIONES RÁPIDAS -->
-        <!-- ===================================================== -->
-
-        <Border Grid.Row="2"
-                Background="White"
-                Padding="30,15"
-                BorderBrush="#E5E7EB"
-                BorderThickness="0,1,0,0">
-
-            <Grid>
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-
-                <!-- Título -->
-
-                <StackPanel Grid.Column="0"
-                            VerticalAlignment="Center">
-
-                    <TextBlock Text="⚡ Acciones rápidas"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Foreground="#374151"/>
-
-                </StackPanel>
-
-
-                <!-- Botones -->
-
-                <StackPanel Grid.Column="2"
-                            Orientation="Horizontal">
-
-
-                    <!-- Nuevo cliente -->
-
-                    <Button Width="155"
-                            Height="42"
-                            Margin="8,0,0,0"
-                            Background="#F8FAFC"
-                            BorderBrush="#D1D5DB"
-                            BorderThickness="1"
-                            Cursor="Hand"
-                            ToolTip="Registrar un nuevo cliente" Click="NuevoCliente_Click">
-
-                        <StackPanel Orientation="Horizontal">
-
-                            <TextBlock Text="👤"
-                                       FontSize="16"
-                                       VerticalAlignment="Center"/>
-
-                            <TextBlock Text="Nuevo cliente"
-                                       Margin="8,0,0,0"
-                                       FontSize="13"
+                            <TextBlock Text="Trabajos en curso"
+                                       FontSize="19"
                                        FontWeight="SemiBold"
-                                       Foreground="#374151"
-                                       VerticalAlignment="Center"/>
+                                       Foreground="#1F2937"/>
+
+                            <TextBlock Text="Servicios actualmente en el taller"
+                                       Margin="0,4,0,0"
+                                       FontSize="12"
+                                       Foreground="#6B7280"/>
 
                         </StackPanel>
 
-                    </Button>
+                    </Grid>
 
 
-                    <!-- Nueva moto -->
+                    <!-- Línea -->
 
-                    <Button Width="145"
-                            Height="42"
-                            Margin="8,0,0,0"
-                            Background="#F8FAFC"
-                            BorderBrush="#D1D5DB"
-                            BorderThickness="1"
-                            Cursor="Hand"
-                            ToolTip="Registrar una nueva moto"
-                            Click="NuevaMoto_Click">
-
-                        <StackPanel Orientation="Horizontal">
-
-                            <TextBlock Text="🏍️"
-                                       FontSize="16"
-                                       VerticalAlignment="Center"/>
-
-                            <TextBlock Text="Nueva moto"
-                                       Margin="8,0,0,0"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Foreground="#374151"
-                                       VerticalAlignment="Center"/>
-
-                        </StackPanel>
-
-                    </Button>
+                    <Border Grid.Row="1"
+                            Height="1"
+                            Background="#E5E7EB"
+                            Margin="0,13,0,13"/>
 
 
-                    <!-- Nuevo servicio -->
+                    <!-- Lista -->
 
-                    <Button Width="165"
-                            Height="42"
-                            Margin="8,0,0,0"
-                            Background="#2563EB"
-                            BorderBrush="#2563EB"
-                            BorderThickness="1"
-                            Cursor="Hand"
-                            ToolTip="Crear un nuevo servicio"
-                            Click="NuevoServicio_Click">
+                    <Border Grid.Row="2"
+                            Background="Transparent">
 
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel>
 
-                            <TextBlock Text="🔧"
-                                       FontSize="16"
-                                       VerticalAlignment="Center"/>
+                            <StackPanel x:Name="PanelTrabajos"/>
 
-                            <TextBlock Text="Nuevo servicio"
-                                       Margin="8,0,0,0"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Foreground="White"
-                                       VerticalAlignment="Center"/>
+
+                            <!-- PAGINADO -->
+
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Margin="0,10,0,0">
+
+                                <Button x:Name="BtnPaginaTrabajosAnterior"
+                                        Content="◀ Anterior"
+                                        Width="100"
+                                        Height="32"
+                                        Margin="0,0,10,0"
+                                        Click="BtnPaginaTrabajosAnterior_Click"
+                                        Style="{StaticResource AccionButtonStyle}"/>
+
+                                <TextBlock x:Name="TxtPaginaTrabajos"
+                                           Text="Página 1 de 1"
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Foreground="#444444"
+                                           Margin="5,0"/>
+
+                                <Button x:Name="BtnPaginaTrabajosSiguiente"
+                                        Content="Siguiente ▶"
+                                        Width="100"
+                                        Height="32"
+                                        Margin="10,0,0,0"
+                                        Click="BtnPaginaTrabajosSiguiente_Click"
+                                        Style="{StaticResource AccionButtonStyle}"/>
+
+                            </StackPanel>
 
                         </StackPanel>
 
-                    </Button>
+                    </Border>
 
-                </StackPanel>
+                </Grid>
 
-            </Grid>
 
-        </Border>
+            </StackPanel>
+
+        </ScrollViewer>
+
+
+        
 
     </Grid>
 

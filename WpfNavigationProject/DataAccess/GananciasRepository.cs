@@ -321,5 +321,52 @@ namespace WpfNavigationProject.DataAccess
 
 
 
+        // ============================================================
+        // RESUMEN DE FACTURACIÓN POR FECHA
+        // ============================================================
+
+        public (decimal Total, int CantidadServicios) GetResumenFacturacion(
+            DateTime fechaDesde,
+            DateTime fechaHasta)
+        {
+            string sql = @"
+            SELECT
+                ISNULL(SUM(Monto), 0) AS Total,
+                COUNT(*) AS CantidadServicios
+            FROM Ganancias
+            WHERE FechaGanancia >= @FechaDesde
+              AND FechaGanancia <= @FechaHasta;";
+
+            using (SqlConnection connection = DbHelper.CreateConnection())
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue(
+                    "@FechaDesde",
+                    fechaDesde.Date);
+
+                command.Parameters.AddWithValue(
+                    "@FechaHasta",
+                    fechaHasta.Date);
+
+                connection.Open();
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        decimal total =
+                            Convert.ToDecimal(reader["Total"]);
+
+                        int cantidad =
+                            Convert.ToInt32(reader["CantidadServicios"]);
+
+                        return (total, cantidad);
+                    }
+                }
+            }
+
+            return (0m, 0);
+        }
+
     }
 }

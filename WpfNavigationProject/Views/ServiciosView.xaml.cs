@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Data.SqlClient;
+using WpfNavigationProject;
 using WpfNavigationProject.DataAccess;
 using WpfNavigationProject.Models;
+using WpfNavigationProject.Views;
 
 namespace WpfNavigationProject.Views
 {
@@ -14,13 +16,13 @@ namespace WpfNavigationProject.Views
     public partial class ServiciosView : UserControl
     {
         private readonly ServiciosRepository _serviciosRepository =
-        new ServiciosRepository();
+            new ServiciosRepository();
 
-    // ============================================================
-    // PAGINACIÓN
-    // ============================================================
+        // ============================================================
+        // PAGINACIÓN
+        // ============================================================
 
-    private const int ServiciosPorPagina = 20;
+        private const int ServiciosPorPagina = 20;
 
         private int _paginaActual = 1;
         private int _totalServicios = 0;
@@ -29,28 +31,79 @@ namespace WpfNavigationProject.Views
         private bool _vistaInicializada = false;
 
         // ============================================================
+        // ESTADO INICIAL
+        // ============================================================
+
+        // null = Todos
+        // 1 = Ingresado
+        // 2 = En proceso
+        // 3 = Terminado
+        // 4 = Pagado
+        private readonly int? _estadoInicial;
+
+        // ============================================================
         // CONSTRUCTOR
         // ============================================================
 
-        public ServiciosView()
+        public ServiciosView(int? estadoInicial = null)
         {
             InitializeComponent();
+
+            _estadoInicial = estadoInicial;
         }
 
         // ============================================================
         // AL CARGAR LA VISTA
         // ============================================================
 
-        private void UserControl_Loaded(
-            object sender,
-            RoutedEventArgs e)
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (_vistaInicializada)
                 return;
 
+            AplicarEstadoInicial();
+
             _vistaInicializada = true;
 
             CargarDatosServicios();
+        }
+
+        // ============================================================
+        // APLICAR ESTADO INICIAL
+        // ============================================================
+
+        private void AplicarEstadoInicial()
+        {
+            // Si no recibimos ningún estado,
+            // dejamos "Todos" seleccionado.
+            if (!_estadoInicial.HasValue)
+            {
+                RbTodos.IsChecked = true;
+                return;
+            }
+
+            switch (_estadoInicial.Value)
+            {
+                case 1:
+                    RbIngresado.IsChecked = true;
+                    break;
+
+                case 2:
+                    RbEnProceso.IsChecked = true;
+                    break;
+
+                case 3:
+                    RbTerminado.IsChecked = true;
+                    break;
+
+                case 4:
+                    RbPagado.IsChecked = true;
+                    break;
+
+                default:
+                    RbTodos.IsChecked = true;
+                    break;
+            }
         }
 
         // ============================================================
@@ -184,7 +237,7 @@ namespace WpfNavigationProject.Views
                     _paginaActual = 1;
 
                 // ----------------------------------------------------
-                // OBTENER SERVICIOS DE LA PÁGINA ACTUAL
+                // OBTENER SERVICIOS
                 // ----------------------------------------------------
 
                 List<Servicios> servicios =
@@ -201,7 +254,7 @@ namespace WpfNavigationProject.Views
                     servicios;
 
                 // ----------------------------------------------------
-                // ACTUALIZAR CONTROLES DE PAGINACIÓN
+                // ACTUALIZAR PAGINACIÓN
                 // ----------------------------------------------------
 
                 ActualizarControlesPaginado();
@@ -391,5 +444,4 @@ namespace WpfNavigationProject.Views
             }
         }
     }
-
 }

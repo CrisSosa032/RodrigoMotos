@@ -501,33 +501,10 @@
                                         </Button.Style>
 
                                         <!-- Icono Power -->
-                                        <Viewbox Width="15"
-                                                 Height="15">
-
-                                            <Canvas Width="24"
-                                                    Height="24">
-
-                                                <!-- Círculo abierto -->
-                                                <Path Stroke="White"
-                                                      StrokeThickness="2.5"
-                                                      StrokeStartLineCap="Round"
-                                                      StrokeEndLineCap="Round"
-                                                      Data="M 7.5,4.2
-                                                            A 9,9 0 1 0 16.5,4.2"/>
-
-                                                <!-- Línea central -->
-                                                <Line X1="12"
-                                                      Y1="3"
-                                                      X2="12"
-                                                      Y2="11"
-                                                      Stroke="White"
-                                                      StrokeThickness="2.5"
-                                                      StrokeStartLineCap="Round"
-                                                      StrokeEndLineCap="Round"/>
-
-                                            </Canvas>
-
-                                        </Viewbox>
+                                        <TextBlock Text="&#xE7E8;"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        FontSize="15"
+                                        Margin="0,0,0,0"/>
 
                                     </Button>
 

@@ -1310,6 +1310,114 @@ namespace WpfNavigationProject.DataAccess
         }
 
 
+
+        // ============================================================
+        // OBTENER CANTIDAD DE SERVICIOS POR ESTADO
+        // ============================================================
+
+        public int GetCantidadServiciosPorEstado(int idEstado)
+        {
+            string sql = @"
+        SELECT COUNT(*)
+        FROM Servicios s
+        INNER JOIN Motos m
+            ON s.IdMoto = m.IdMoto
+        INNER JOIN Clientes c
+            ON m.IdCliente = c.IdCliente
+        WHERE s.IdEstado = @IdEstado
+          AND c.Activo = 1;";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add(
+                    "@IdEstado",
+                    SqlDbType.Int)
+                    .Value = idEstado;
+
+                connection.Open();
+
+                object resultado =
+                    command.ExecuteScalar();
+
+                return resultado != null
+                    ? Convert.ToInt32(resultado)
+                    : 0;
+            }
+        }
+
+
+        // ============================================================
+        // OBTENER RESUMEN DE ESTADOS PARA EL GRÁFICO
+        // ============================================================
+
+        public Dictionary<int, int> GetResumenEstadosPorFecha(
+            DateTime fechaDesde,
+            DateTime fechaHasta)
+        {
+            Dictionary<int, int> resumen =
+                new Dictionary<int, int>();
+
+            string sql = @"
+            SELECT
+                s.IdEstado,
+                COUNT(*) AS Cantidad
+            FROM Servicios s
+            INNER JOIN Motos m
+                ON s.IdMoto = m.IdMoto
+            INNER JOIN Clientes c
+                ON m.IdCliente = c.IdCliente
+            WHERE s.FechaEntrada >= @FechaDesde
+              AND s.FechaEntrada <= @FechaHasta
+              AND s.IdEstado IN (1, 2, 3)
+              AND c.Activo = 1
+            GROUP BY
+                s.IdEstado;";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add(
+                    "@FechaDesde",
+                    SqlDbType.Date)
+                    .Value = fechaDesde.Date;
+
+                command.Parameters.Add(
+                    "@FechaHasta",
+                    SqlDbType.Date)
+                    .Value = fechaHasta.Date;
+
+                connection.Open();
+
+                using (SqlDataReader reader =
+                       command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int idEstado =
+                            Convert.ToInt32(reader["IdEstado"]);
+
+                        int cantidad =
+                            Convert.ToInt32(reader["Cantidad"]);
+
+                        resumen[idEstado] = cantidad;
+                    }
+                }
+            }
+
+            return resumen;
+        }
+
+
+
+
+
         // ============================================================
         // OBTENER TRABAJOS EN CURSO
         // ============================================================
@@ -1407,6 +1515,175 @@ namespace WpfNavigationProject.DataAccess
             }
 
             return trabajos;
+        }
+
+
+
+
+        // ============================================================
+        // OBTENER TRABAJOS EN CURSO PAGINADOS
+        // ============================================================
+
+        public List<TrabajoEnCurso> GetTrabajosEnCursoPaginados(
+            int pagina,
+            int trabajosPorPagina)
+        {
+            List<TrabajoEnCurso> trabajos =
+                new List<TrabajoEnCurso>();
+
+            if (pagina < 1)
+                pagina = 1;
+
+            if (trabajosPorPagina < 1)
+                trabajosPorPagina = 5;
+
+            int offset =
+                (pagina - 1) * trabajosPorPagina;
+
+            string sql = @"
+                        SELECT
+                            s.IdServicio,
+                            s.IdMoto,
+                            s.IdEstado,
+                            s.Detalle,
+                            s.FechaEntrada,
+                            m.Marca,
+                            m.Modelo,
+                            m.Patente,
+                            c.Nombre AS Cliente
+
+                        FROM Servicios s
+
+                        INNER JOIN Motos m
+                            ON s.IdMoto = m.IdMoto
+
+                        INNER JOIN Clientes c
+                            ON m.IdCliente = c.IdCliente
+
+                        WHERE s.IdEstado = 2
+                          AND c.Activo = 1
+
+                        ORDER BY
+                            s.FechaEntrada ASC,
+                            s.IdServicio ASC
+
+                        OFFSET @Offset ROWS
+                        FETCH NEXT @TrabajosPorPagina ROWS ONLY;";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add(
+                    "@Offset",
+                    SqlDbType.Int)
+                    .Value = offset;
+
+                command.Parameters.Add(
+                    "@TrabajosPorPagina",
+                    SqlDbType.Int)
+                    .Value = trabajosPorPagina;
+
+                connection.Open();
+
+                using (SqlDataReader reader =
+                       command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        trabajos.Add(new TrabajoEnCurso
+                        {
+                            IdServicio =
+                                Convert.ToInt32(
+                                    reader["IdServicio"]),
+
+                            IdMoto =
+                                Convert.ToInt32(
+                                    reader["IdMoto"]),
+
+                            IdEstado =
+                                Convert.ToInt32(
+                                    reader["IdEstado"]),
+
+                            Detalle =
+                                reader["Detalle"] != DBNull.Value
+                                    ? reader["Detalle"].ToString()
+                                        ?? string.Empty
+                                    : string.Empty,
+
+                            FechaEntrada =
+                                Convert.ToDateTime(
+                                    reader["FechaEntrada"]),
+
+                            Marca =
+                                reader["Marca"] != DBNull.Value
+                                    ? reader["Marca"].ToString()
+                                        ?? string.Empty
+                                    : string.Empty,
+
+                            Modelo =
+                                reader["Modelo"] != DBNull.Value
+                                    ? reader["Modelo"].ToString()
+                                        ?? string.Empty
+                                    : string.Empty,
+
+                            Patente =
+                                reader["Patente"] != DBNull.Value
+                                    ? reader["Patente"].ToString()
+                                        ?? string.Empty
+                                    : string.Empty,
+
+                            Cliente =
+                                reader["Cliente"] != DBNull.Value
+                                    ? reader["Cliente"].ToString()
+                                        ?? string.Empty
+                                    : string.Empty
+                        });
+                    }
+                }
+            }
+
+            return trabajos;
+        }
+
+
+        // ============================================================
+        // CONTAR TRABAJOS EN CURSO
+        // ============================================================
+
+        public int GetTotalTrabajosEnCurso()
+        {
+            string sql = @"
+                        SELECT COUNT(*)
+
+                        FROM Servicios s
+
+                        INNER JOIN Motos m
+                            ON s.IdMoto = m.IdMoto
+
+                        INNER JOIN Clientes c
+                            ON m.IdCliente = c.IdCliente
+
+                        WHERE s.IdEstado = 2
+                          AND c.Activo = 1;";
+
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+
+            using (SqlCommand command =
+                   new SqlCommand(sql, connection))
+            {
+                connection.Open();
+
+                object resultado =
+                    command.ExecuteScalar();
+
+                return resultado != null
+                    ? Convert.ToInt32(resultado)
+                    : 0;
+            }
         }
     }
 }
