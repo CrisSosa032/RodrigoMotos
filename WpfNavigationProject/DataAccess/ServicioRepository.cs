@@ -1685,5 +1685,129 @@ namespace WpfNavigationProject.DataAccess
                     : 0;
             }
         }
+
+
+
+
+        // ============================================================
+        // MARCAR SERVICIO COMO TERMINADO
+        // ============================================================
+
+        public void MarcarServicioTerminado(int idServicio)
+        {
+            using (SqlConnection connection =
+                   DbHelper.CreateConnection())
+            {
+                connection.Open();
+
+                using (SqlTransaction transaction =
+                       connection.BeginTransaction())
+                {
+                    try
+                    {
+                        string obtenerEstadoSql = @"
+                    SELECT IdEstado
+                    FROM Servicios WITH (UPDLOCK)
+                    WHERE IdServicio = @IdServicio;";
+
+                        int estadoActual;
+
+                        using (SqlCommand estadoCommand =
+                            new SqlCommand(
+                                obtenerEstadoSql,
+                                connection,
+                                transaction))
+                        {
+                            estadoCommand.Parameters.Add(
+                                "@IdServicio",
+                                SqlDbType.Int)
+                                .Value = idServicio;
+
+                            object resultado =
+                                estadoCommand.ExecuteScalar();
+
+                            if (resultado == null)
+                            {
+                                throw new Exception(
+                                    "No se encontró el servicio seleccionado.");
+                            }
+
+                            estadoActual =
+                                Convert.ToInt32(resultado);
+                        }
+
+                        if (estadoActual != 2)
+                        {
+                            throw new Exception(
+                                "El servicio ya no se encuentra en estado En proceso.");
+                        }
+
+                        const int ESTADO_TERMINADO = 3;
+
+                        string actualizarSql = @"
+                    UPDATE Servicios
+                    SET IdEstado = @IdEstado
+                    WHERE IdServicio = @IdServicio;";
+
+                        using (SqlCommand updateCommand =
+                            new SqlCommand(
+                                actualizarSql,
+                                connection,
+                                transaction))
+                        {
+                            updateCommand.Parameters.Add(
+                                "@IdEstado",
+                                SqlDbType.Int)
+                                .Value = ESTADO_TERMINADO;
+
+                            updateCommand.Parameters.Add(
+                                "@IdServicio",
+                                SqlDbType.Int)
+                                .Value = idServicio;
+
+                            updateCommand.ExecuteNonQuery();
+                        }
+
+                        string historialSql = @"
+                    INSERT INTO ServicioHistorial
+                    (
+                        IdServicio,
+                        IdEstado
+                    )
+                    VALUES
+                    (
+                        @IdServicio,
+                        @IdEstado
+                    );";
+
+                        using (SqlCommand historialCommand =
+                            new SqlCommand(
+                                historialSql,
+                                connection,
+                                transaction))
+                        {
+                            historialCommand.Parameters.Add(
+                                "@IdServicio",
+                                SqlDbType.Int)
+                                .Value = idServicio;
+
+                            historialCommand.Parameters.Add(
+                                "@IdEstado",
+                                SqlDbType.Int)
+                                .Value = ESTADO_TERMINADO;
+
+                            historialCommand.ExecuteNonQuery();
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
     }
 }

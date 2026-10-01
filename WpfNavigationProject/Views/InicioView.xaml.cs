@@ -534,17 +534,17 @@ namespace WpfNavigationProject.Views
             // ========================================================
 
             StackPanel estadoPanel =
-                new StackPanel
-                {
-                    HorizontalAlignment =
-                        HorizontalAlignment.Right,
+            new StackPanel
+            {
+                HorizontalAlignment =
+                    HorizontalAlignment.Right,
 
-                    VerticalAlignment =
-                        VerticalAlignment.Center
-                };
+                VerticalAlignment =
+                    VerticalAlignment.Center
+            };
 
-            Border estado =
-                new Border
+                Border estado =
+                    new Border
                 {
                     Background =
                         new SolidColorBrush(
@@ -564,14 +564,25 @@ namespace WpfNavigationProject.Views
                             6),
 
                     HorizontalAlignment =
-                        HorizontalAlignment.Right
+                        HorizontalAlignment.Right,
+
+                    Cursor =
+                        Cursors.Hand,
+
+                    ToolTip =
+                        "Marcar servicio como terminado",
+
+                    Tag =
+                        trabajo.IdServicio
                 };
 
             TextBlock estadoTexto =
                 new TextBlock
                 {
                     Text = "🔧 En curso",
+
                     FontSize = 11,
+
                     FontWeight =
                         FontWeights.SemiBold,
 
@@ -585,6 +596,66 @@ namespace WpfNavigationProject.Views
 
             estado.Child =
                 estadoTexto;
+
+
+            // ========================================================
+            // EFECTO HOVER
+            // ========================================================
+
+            estado.MouseEnter +=
+                (sender, e) =>
+                {
+                    estado.Background =
+                        new SolidColorBrush(
+                            Color.FromRgb(
+                                220,
+                                252,
+                                231));
+
+                    estadoTexto.Text =
+                        "✓ Marcar terminado";
+
+                    estadoTexto.Foreground =
+                        new SolidColorBrush(
+                            Color.FromRgb(
+                                22,
+                                101,
+                                52));
+                };
+
+            estado.MouseLeave +=
+                (sender, e) =>
+                {
+                    estado.Background =
+                        new SolidColorBrush(
+                            Color.FromRgb(
+                                255,
+                                244,
+                                214));
+
+                    estadoTexto.Text =
+                        "🔧 En curso";
+
+                    estadoTexto.Foreground =
+                        new SolidColorBrush(
+                            Color.FromRgb(
+                                154,
+                                103,
+                                0));
+                };
+
+
+            // ========================================================
+            // CLICK
+            // ========================================================
+
+            estado.MouseLeftButtonUp +=
+                (sender, e) =>
+                {
+                    MarcarTrabajoComoTerminado(
+                        trabajo.IdServicio,
+                        trabajo.MotoDescripcion);
+                };
 
             estadoPanel.Children.Add(
                 estado);
@@ -891,6 +962,50 @@ namespace WpfNavigationProject.Views
             {
                 mainWindow.ContentFrame.Navigate(
                     new ServicioFormView(0));
+            }
+        }
+
+
+
+        private void MarcarTrabajoComoTerminado(
+            int idServicio,
+            string descripcionMoto)
+        {
+            MessageBoxResult resultado =
+                MessageBox.Show(
+                    $"¿Deseás marcar como terminado el servicio de:\n\n" +
+                    $"{descripcionMoto}\n\n" +
+                    $"El servicio pasará de \"En proceso\" a \"Terminado\".",
+                    "Confirmar servicio terminado",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+            if (resultado != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                _serviciosRepository
+                    .MarcarServicioTerminado(idServicio);
+
+                MessageBox.Show(
+                    "El servicio fue marcado como terminado correctamente.",
+                    "Servicio actualizado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                // Actualizamos todo el dashboard
+                CargarResumenEstados();
+                CargarGraficoEstados();
+                CargarTrabajosEnCurso();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo actualizar el estado del servicio.\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
     }
